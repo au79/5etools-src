@@ -6,7 +6,22 @@ Status: approved
 
 Keep the MCP server in a separate `mcp-server/` package with its own manifest, lockfile, dependencies, source, tests, and documentation. The upstream 5etools app must not import or configure it.
 
-Implement the MCP package in TypeScript using the latest stable TypeScript release available when implementation begins. Pin the resolved toolchain in the package lockfile and compile to runnable JavaScript before launching the local server.
+Implement the MCP package in TypeScript using `typescript@6.0.3`, the latest reasonable version compatible with the current TypeScript-aware ESLint stack. Pin the toolchain in the package lockfile and compile to runnable JavaScript before launching the local server. Re-evaluate this pin when `typescript-eslint` supports the TypeScript 7 compiler API.
+
+Use these package-local tooling preferences:
+
+- two-space indentation using spaces, not tabs;
+- single quotes;
+- trailing commas in all multiline constructs;
+- 120-character print width;
+- bracket spacing, always-parenthesized arrow parameters, quote properties as needed, LF endings, final newline, and reflowed Markdown;
+- Prettier owns formatting; ESLint does not duplicate formatting rules;
+- `strict`, `noUncheckedIndexedAccess`, and `exactOptionalPropertyTypes` enabled;
+- `noUnusedLocals` and `noUnusedParameters` handled as ESLint warnings, ignoring names beginning with `_`;
+- `module: NodeNext`, `moduleResolution: NodeNext`, `target: ES2024`, source maps enabled, declaration output disabled, and cleaned `dist/` output;
+- lexical import ordering within Node-built-in, external, internal, and relative groups;
+- `no-floating-promises` as an error, `no-misused-promises` as a warning, `await-thenable` as an error, and no initial `promise-function-async` rule;
+- warnings do not fail CI, while correctness errors do.
 
 Start with local MCP `stdio`. Keep the data/query core transport-independent so a future remote transport can be added without duplicating domain logic.
 
@@ -20,6 +35,7 @@ This minimizes conflicts with parent-fork refreshes and keeps MCP dependencies o
 
 - `stdout` is reserved for MCP protocol traffic; logs use `stderr` for `stdio`.
 - TypeScript source is compiled before the MCP process is launched; generated build output is package-local and not upstream app output.
+- TypeScript compiler output uses `dist/`, with `dist/` cleaned before each build.
 - Remote HTTP transport, authentication, deployment, and multi-user concerns are deferred.
 - The server must validate the configured root before serving data.
 

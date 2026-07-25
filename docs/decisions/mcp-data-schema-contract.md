@@ -21,6 +21,8 @@ Strict validation makes parent-fork refreshes visible instead of silently produc
 - New records and sources are accepted when they conform to an existing schema.
 - Schema changes intentionally require adapter/test updates.
 - Compile-time TypeScript types and runtime Zod schemas should describe the same MCP-facing contracts; neither replaces runtime validation of upstream JSON.
+- `noUncheckedIndexedAccess` is enabled so catalog and source lookups model missing records as `undefined` and require explicit handling.
+- `exactOptionalPropertyTypes` is enabled so absent optional fields remain distinct from fields explicitly set to `undefined`.
 - Recursive or heterogeneous structures such as `entries` and book/adventure trees need explicit schema treatment and documented extension points.
 - Character-builder assistance is a future read-only consumer of structured options, prerequisites, choices, and relationships; Phase 1 provides no character-building operations.
 

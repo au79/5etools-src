@@ -19,7 +19,7 @@ These notes are intentionally lighter than full ADRs. Update the relevant note w
 
 ### Phase 1: Architecture and compatibility decisions
 
-Confirm the supported MCP SDK/transport, Node version policy, latest-stable TypeScript toolchain, ChatGPT launch configuration, data-root configuration, edition/source semantics, default source scope, versioned domain manifest, strict schema behavior, observability approach, and adventure safety controls. The decisions captured above are the working Phase 1 baseline.
+Confirm the supported MCP SDK/transport, Node version policy, latest reasonable TypeScript toolchain (`typescript@6.0.3`, selected for compatibility with the current TypeScript-aware ESLint stack), approved formatting/linting/type-checking rules, ChatGPT launch configuration, data-root configuration, edition/source semantics, default source scope, versioned domain manifest, strict schema behavior, observability approach, and adventure safety controls. The decisions captured above are the working Phase 1 baseline.
 
 ### Phase 2: Read-only catalog and lookup core
 

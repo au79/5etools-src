@@ -10,6 +10,8 @@ Provide a standalone MCP validation command that can inspect parent data without
 
 The package must compile and type-check its TypeScript source before tests or the local server are considered valid.
 
+The package uses Prettier for formatting, ESLint for correctness and TypeScript safety, and lexical import sorting within import groups. Warnings do not fail CI. Promise handling must prevent unobserved async failures, with floating promises treated as errors.
+
 Include automated MCP protocol tests and a documented manual ChatGPT smoke test using races/classes.
 
 Require observability from the first implementation. Select a logging library and standard structured JSON format before implementation. For local `stdio`, stdout remains protocol-only and logs must use stderr or another explicitly safe sink.
@@ -23,7 +25,7 @@ The steel thread proves the full user path quickly without waiting for every dom
 - Player-facing groups precede DM-facing groups.
 - Rendering, derived helpers, encounter/character assistance, and rules adjudication are deferred until the raw read-only surface is reliable.
 - Logging library and JSON schema remain a near-term implementation choice, not a reason to delay the architecture.
-- The resolved latest-stable TypeScript version is pinned in the package lockfile and can be refreshed deliberately.
+- `typescript@6.0.3` is pinned in the package lockfile as the latest reasonable version compatible with the current TypeScript-aware ESLint stack; revisit when TypeScript 7 support is available.
 
 ## Revisit triggers
 
