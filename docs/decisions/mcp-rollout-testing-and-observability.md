@@ -16,6 +16,8 @@ Include automated MCP protocol tests and a documented manual ChatGPT smoke test 
 
 Require observability from the first implementation. Select a logging library and standard structured JSON format before implementation. For local `stdio`, stdout remains protocol-only and logs must use stderr or another explicitly safe sink.
 
+Use `pino@10.3.1` for structured JSON logging and include `pino-pretty@13.1.3` as an opt-in human-readable local formatter. JSON on `stderr` remains the default; pretty output must never be sent to protocol `stdout`.
+
 ## Rationale
 
 The steel thread proves the full user path quickly without waiting for every domain. Grouped expansion keeps schema work reviewable. Independent validation makes parent-fork edits checkable without starting the server. Observability is required to diagnose startup validation and MCP request failures.
@@ -25,6 +27,8 @@ The steel thread proves the full user path quickly without waiting for every dom
 - Player-facing groups precede DM-facing groups.
 - Rendering, derived helpers, encounter/character assistance, and rules adjudication are deferred until the raw read-only surface is reliable.
 - Logging library and JSON schema remain a near-term implementation choice, not a reason to delay the architecture.
+- Pretty local logs are a convenience mode, not a replacement for machine-readable JSON or a protocol output channel.
+- The selected MCP SDK currently brings a moderate `@hono/node-server` audit finding through an unused HTTP-oriented dependency path; track it until an upstream fix is available.
 - `typescript@6.0.3` is pinned in the package lockfile as the latest reasonable version compatible with the current TypeScript-aware ESLint stack; revisit when TypeScript 7 support is available.
 
 ## Revisit triggers

@@ -42,3 +42,9 @@ This minimizes conflicts with parent-fork refreshes and keeps MCP dependencies o
 ## Revisit triggers
 
 Revisit when a remote deployment is authorized, when ChatGPT requires a different transport/configuration shape, or when package isolation materially impedes maintenance.
+
+## Phase 1 library selections
+
+Use `@modelcontextprotocol/sdk@1.29.0` for the MCP adapter, `zod@4.4.3` for strict runtime schemas, `pino@10.3.1` for structured logging, and `pino-pretty@13.1.3` for opt-in human-readable local logs. Use Node's built-in test runner rather than adding a test framework. These dependencies remain package-local.
+
+The selected MCP SDK currently brings a moderate `@hono/node-server` audit finding through an unused HTTP-oriented dependency path. The initial server uses local `stdio`, so this is not on the active transport path; revisit the SDK or dependency resolution when an upstream fix is available.
