@@ -16,18 +16,22 @@ P1-03A establishes the MCP transport integration gate. The server completes the 
 From this directory:
 
 ```bash
-npm install
-npm run format:check
-npm run lint
-npm run typecheck
-npm run build
-npm test
-npm run test:coverage
-npm start
+corepack enable pnpm
+pnpm install --frozen-lockfile
+pnpm run format:check
+pnpm run lint
+pnpm run typecheck
+pnpm run build
+pnpm test
+pnpm run test:coverage
+pnpm start
 ```
 
+This package uses the PNPM version pinned in `packageManager`; the enclosing 5etools application remains independent
+and retains its existing npm workflow.
+
 Unit tests for `file.ext` live beside the tested file as `file.unit.test.ext`. Larger cross-module or protocol tests may
-live in `test/` with their integration-oriented name. `npm run test:coverage` requires 100% line, branch, and function
+live in `test/` with their integration-oriented name. `pnpm run test:coverage` requires 100% line, branch, and function
 coverage for production source, excluding only unit-test files and `cli.ts`, which only wires process startup and failure
 handling to `process.exitCode`.
 
