@@ -28,7 +28,7 @@ The steel thread proves the full user path quickly without waiting for every dom
 - Rendering, derived helpers, encounter/character assistance, and rules adjudication are deferred until the raw read-only surface is reliable.
 - Logging library and JSON schema remain a near-term implementation choice, not a reason to delay the architecture.
 - Pretty local logs are a convenience mode, not a replacement for machine-readable JSON or a protocol output channel.
-- The selected MCP SDK currently brings a moderate `@hono/node-server` audit finding through an unused HTTP-oriented dependency path; track it until an upstream fix is available.
+- The MCP package overrides its transitive `@hono/node-server` dependency to patched `2.0.11`; `npm audit --omit=dev` reports no vulnerabilities.
 - `typescript@6.0.3` is pinned in the package lockfile as the latest reasonable version compatible with the current TypeScript-aware ESLint stack; revisit when TypeScript 7 support is available.
 
 ## Revisit triggers
