@@ -2,7 +2,7 @@
 
 ## Goal
 
-Provide a local MCP server that exposes this repository's D&D data to ChatGPT for personal DM/player assistance and to other agents. Prove the path quickly with a read-only races/classes steel thread, then expand through grouped player-facing and DM-facing domains.
+Provide a local MCP server that exposes this repository's D&D data to ChatGPT for personal DM/player assistance and to other agents. Prove the wiring first with a transport-only MCP steel thread, then add a read-only races/classes steel thread and expand through grouped player-facing and DM-facing domains.
 
 ## Phase 1 decision index
 
@@ -19,7 +19,7 @@ These notes are intentionally lighter than full ADRs. Update the relevant note w
 
 ### Phase 1: Architecture and compatibility decisions
 
-Confirm the supported MCP SDK/transport, Node version policy, latest reasonable TypeScript toolchain (`typescript@6.0.3`, selected for compatibility with the current TypeScript-aware ESLint stack), approved formatting/linting/type-checking rules, ChatGPT launch configuration, data-root configuration, edition/source semantics, default source scope, versioned domain manifest, strict schema behavior, observability approach (`pino@10.3.1` with optional `pino-pretty@13.1.3`), and adventure safety controls. The decisions captured above are the working Phase 1 baseline.
+Confirm the supported MCP SDK/transport, Node version policy, latest reasonable TypeScript toolchain (`typescript@6.0.3`, selected for compatibility with the current TypeScript-aware ESLint stack), approved formatting/linting/type-checking rules, ChatGPT launch configuration, data-root configuration, edition/source semantics, default source scope, versioned domain manifest, strict schema behavior, observability approach (`pino@10.3.1` with optional `pino-pretty@13.1.3`), and adventure safety controls. Prioritize the integration gate before the data catalog: the server must complete MCP initialization, answer standard `ping`, advertise its diagnostic tool, and return package version plus the running git commit hash before data loading work proceeds. The decisions captured above are the working Phase 1 baseline.
 
 ### Phase 2: Read-only catalog and lookup core
 
@@ -27,7 +27,7 @@ Implement the TypeScript catalog, rollout-group schema validation, lazy data acc
 
 ### Phase 3: MCP adapter and steel thread
 
-Expose the validated races/classes surface through local `stdio` with raw `search` and `get` operations. Add the automated protocol tests and documented manual ChatGPT smoke test. Keep stdout protocol-only and route observability to stderr or another explicitly safe sink.
+The transport-only integration gate is delivered first, independently of the data catalog. Then expose the validated races/classes surface through local `stdio` with raw `search` and `get` operations. Add the automated protocol tests and documented manual ChatGPT smoke test. Keep stdout protocol-only and route observability to stderr or another explicitly safe sink.
 
 ### Phase 4: Validation, refresh workflow, and client documentation
 
@@ -52,6 +52,7 @@ Expand through player-facing groups first, then DM-facing groups. Only after the
 ## Acceptance criteria for the detailed implementation
 
 - ChatGPT can launch the local server over `stdio`, discover the exposed catalog, search races/classes, and retrieve exact raw records.
+- Before data loading, a ChatGPT-compatible client can complete `initialize`/`initialized`, use standard `ping`, discover the diagnostic tool, and retrieve the server package version and running git commit hash.
 - The first rollout validates and serves races and classes without requiring unrelated domains to pass validation.
 - Results include stable source/edition context and the mandatory originating-file/source-root provenance envelope.
 - Ambiguous searches return clearly labeled matches; exact retrieval does not silently choose among conflicting sources.
