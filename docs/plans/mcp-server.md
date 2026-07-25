@@ -1,117 +1,73 @@
-# High-Level Plan: D&D Data and Rules MCP Server
+# D&D Data MCP Server — High-Level Plan
 
 ## Goal
 
-Expose the D&D data available in this 5etools fork through an MCP server that can support both DM and player questions, while keeping the implementation easy to carry forward when the fork is refreshed from its parent.
+Provide a local MCP server that exposes this repository's D&D data to ChatGPT for personal DM/player assistance and to other agents. Prove the path quickly with a read-only races/classes steel thread, then expand through grouped player-facing and DM-facing domains.
 
-## Guiding constraints
+## Phase 1 decision index
 
-- Treat the repository's JSON data as the source of truth; do not copy game content into a second database or hand-maintained registry.
-- Keep the MCP implementation isolated from the site's runtime and generated build output wherever practical.
-- Prefer metadata and filesystem discovery over hard-coded lists, so new books, creatures, items, spells, and similar content become available after a normal parent refresh.
-- Preserve source identity, book/source information, and edition/version distinctions in responses so the assistant can avoid silently mixing rules.
-- Make licensing, attribution, and the fork's existing content boundaries visible in the server's documentation and response metadata.
-- Treat the supported conceptual domains as a versioned compatibility contract; new domains or incompatible shape changes require an intentional plan/code update.
+Phase 1 decisions are recorded in lightweight decision notes:
 
-## Proposed shape
+- [Package boundary and transport](../decisions/mcp-package-boundary-and-transport.md)
+- [Data schema and compatibility contract](../decisions/mcp-data-schema-contract.md)
+- [Content scope and adventure safety](../decisions/mcp-content-scope-and-safety.md)
+- [Rollout, testing, and observability](../decisions/mcp-rollout-testing-and-observability.md)
 
-Create a self-contained server area, likely under `node/` or a dedicated top-level `mcp/` directory, with:
-
-1. A data catalog layer that discovers supported JSON files and their top-level collections, loads them lazily, and caches parsed data for the process lifetime.
-2. A schema-validation layer using explicit Zod schemas/adapters for the supported domains and major record types. It should validate the current upstream shapes before data is exposed.
-3. A normalization/search layer that gives common entities a stable identity such as category, name, source, and slug, while retaining the original validated 5etools JSON for complete details.
-4. An MCP transport entry point suitable for local desktop clients, with configuration for the repository/data root and optional read-only access to `prerelease/` and `homebrew/`.
-5. A small, intentional tool/resource surface for discovery, exact lookup, filtered search, source/catalog inspection, and rules-oriented retrieval.
-6. Tests and fixtures that validate discovery, lookup, source filtering, malformed/unsupported data handling, and refresh behavior without depending on a particular current book list.
-
-## Schema and compatibility contract
-
-The MCP-facing domain set should be explicit and versioned rather than inferred indefinitely:
-
-`character`, `class`, `spell`, `item`, `creature`, `rule`, `adventure`, `book`, `worldbuilding`, and `dm-tool`.
-
-Each domain should have a domain adapter and Zod schema based on the current upstream shape. The common response envelope should include stable fields such as `id`, `name`, `domain`, `source`, and `edition`, while retaining the validated domain-specific payload.
-
-Validation should be strict by default. The server must fail during catalog/startup validation when:
-
-- an expected domain or required collection is missing;
-- a known field changes type, requiredness, or nested structure;
-- an unexpected top-level collection or unsupported domain appears; or
-- a strict schema encounters an unrecognized field.
-
-The failure must identify the source file, domain/collection, record identity where available, and the schema error. There should be no silent best-effort fallback to expose data that did not pass validation.
-
-New records, sources, books, and files are compatible when they conform to an existing domain schema. Additive upstream fields are intentionally treated as breaking changes under strict mode and require an explicit schema review/update. Any fields designated as documented extension points must be modeled explicitly rather than hidden behind an unrestricted catch-all.
-
-## Initial MCP surface to design
-
-The detailed plan should define exact schemas and names, but the first version should cover these capabilities:
-
-- List available content categories and sources.
-- Search entities by name/text/category/source, with bounded result counts.
-- Fetch one exact entity, including its original structured data and readable rendering where useful.
-- Retrieve related entries, such as a spell's classes, a creature's actions, or an item's source.
-- Retrieve rules/reference material from supported rule and reference datasets, clearly labeled by source.
-- Expose repository/catalog metadata so a client can report which data snapshot it used.
-
-Avoid making the server an unrestricted filesystem browser or a general-purpose code execution tool. Keep all operations read-only and enforce result-size limits, path containment, predictable error responses, and validation before exposure.
-
-## Refresh and maintenance strategy
-
-- Do not modify individual `data/*.json` files for MCP support.
-- Do not generate a second checked-in copy of the content.
-- Keep server code and tests in files that are unlikely to conflict with upstream changes; isolate package-script/dependency changes in a small, obvious area.
-- Base catalog discovery on existing indexes and file conventions, with a fallback scan for newly added datasets.
-- Add a smoke test that runs against the current checkout and verifies that representative categories are discovered without asserting exact counts.
-- Document the refresh workflow: update from the parent, install/lock dependencies as needed, run the catalog smoke test, then run the relevant repository checks.
-- Treat changes to the upstream data schema as intentional compatibility work: update the affected Zod schema/adapter, add or revise fixtures, and document the change before accepting the refresh.
-- Keep the conceptual domain set stable; fail fast and call out any new or unclassifiable domain rather than silently adding it to the MCP surface.
+These notes are intentionally lighter than full ADRs. Update the relevant note when a decision changes, and update this index if notes are added or consolidated.
 
 ## Phased delivery
 
 ### Phase 1: Architecture and compatibility decisions
 
-Confirm the supported MCP SDK/transport, Node version policy, client launch configuration, data-root configuration, edition/source semantics, whether `prerelease/` and `homebrew/` are enabled by default, the versioned domain manifest, and strict-versus-extension-point behavior for each schema.
+Confirm the supported MCP SDK/transport, Node version policy, ChatGPT launch configuration, data-root configuration, edition/source semantics, default source scope, versioned domain manifest, strict schema behavior, observability approach, and adventure safety controls. The decisions captured above are the working Phase 1 baseline.
 
 ### Phase 2: Read-only catalog and lookup core
 
-Implement discovery, strict Zod validation, lazy loading, stable identifiers, source-aware filtering, bounded search, exact lookup, and error handling. Keep this layer independently testable without an MCP client.
+Implement the catalog, rollout-group schema validation, lazy data access, stable identifiers, provenance envelopes, source-aware filtering, bounded search, exact lookup, ambiguity handling, and predictable errors. Keep this layer independently testable without an MCP client.
 
-### Phase 3: MCP adapter
+### Phase 3: MCP adapter and steel thread
 
-Expose the core through the selected MCP transport and tool/resource schemas. Include concise descriptions that help a DM/player agent choose search versus exact retrieval and understand source labels.
+Expose the validated races/classes surface through local `stdio` with raw `search` and `get` operations. Add the automated protocol tests and documented manual ChatGPT smoke test. Keep stdout protocol-only and route observability to stderr or another explicitly safe sink.
 
-### Phase 4: Validation and client documentation
+### Phase 4: Validation, refresh workflow, and client documentation
 
-Add unit/integration coverage, a local launch example, refresh instructions, representative usage examples, and repository-compatible lint/test scripts. Verify that a refreshed data file is visible without code changes.
+Add the standalone validation command, grouped rollout checks, local launch/configuration documentation, refresh instructions, provenance examples, and representative usage examples. Verify that compatible upstream additions are discovered and incompatible shape changes fail clearly.
 
-### Phase 5: Optional enrichment
+### Phase 5: Grouped expansion and optional enrichment
 
-Only after the read-only data surface is reliable, consider derived conveniences such as rules cross-references, encounter/character helpers, or natural-language rendering. These should remain derived at query time and must link back to source entries.
+Expand through player-facing groups first, then DM-facing groups. Only after the read-only surface is reliable, consider tagged-text rendering, rules cross-references, encounter/character helpers, and the adventure allowlist helper. Derived conveniences should link back to source entries.
 
 ## Risks and decisions for the detailed plan
 
-- The repository contains many heterogeneous JSON shapes; a universal schema may lose useful data, while returning raw JSON everywhere may be difficult for clients to use. The adapter should use a small common envelope plus a strict, domain-specific validated payload.
+- The repository contains many heterogeneous JSON shapes; a universal schema may lose useful data, while returning raw JSON everywhere may be difficult for clients to use. Use a small common provenance envelope plus strict, domain-specific validated payloads.
 - Strict validation makes upstream additive fields intentionally breaking. This is the desired fail-fast behavior, but it requires schema updates as part of refresh review.
-- Some nested content is recursive or heterogeneous, especially `entries` and book/adventure trees. The schemas must model those structures explicitly and identify any deliberate extension points.
-- Search indexes generated for the website may not be the right MCP index. The detailed plan should decide whether to reuse them read-only or build an in-memory index at startup/query time.
-- Public, prerelease, and homebrew content can overlap by name. Source-aware IDs and explicit filters are required to prevent ambiguous answers.
-- Some rules are represented as prose, tags, or nested entries rather than standalone entities. The server should distinguish authoritative lookup from derived interpretation and report missing/ambiguous matches.
-- MCP SDK and transport choices affect client compatibility and dependency churn. Pin the smallest supported surface and document the compatibility target.
+- Some nested content is recursive or heterogeneous, especially `entries` and book/adventure trees. Schemas must model those structures explicitly and identify deliberate extension points.
+- Search indexes generated for the website may not be the right MCP index. Decide whether to reuse them read-only or build an in-memory index during the relevant rollout.
+- Public, prerelease, and homebrew content can overlap by name. Source-root-aware IDs and explicit filters are required to prevent ambiguous answers.
+- Adventures can expose spoilers. Default exclusion, explicit opt-in, allowlists, and warnings must be enforced consistently in configuration, validation, search, and responses.
+- Raw 5etools tags are useful for progression but not immediately human-friendly. Preserve them first, then evaluate reuse or emulation of existing repository renderers.
+- MCP SDK and transport choices affect client compatibility and dependency churn. Pin the smallest supported surface and keep transport-specific code isolated.
+- Observability must never corrupt `stdio`; library and JSON schema selection should be evaluated against stderr behavior and future transport needs.
 
 ## Acceptance criteria for the detailed implementation
 
-- A supported MCP client can launch the server against a checkout and discover its available categories/sources.
-- A client can search and retrieve representative spells, creatures, items, classes, races, backgrounds, feats, books, adventures, conditions, actions, vehicles, and other available reference datasets without hand-maintained per-entry code.
-- Results include stable source/edition context and are bounded, deterministic, and read-only.
-- Refreshing the parent data and rerunning the documented checks makes newly added content discoverable without copying or editing it into MCP-specific files.
-- Tests cover current representative data, strict schema behavior, startup failures for missing/unknown collections and shape changes, and discovery of future content additions that conform to existing schemas.
-- Existing site build, lint, and data checks remain unaffected except for explicitly documented package/setup integration.
+- ChatGPT can launch the local server over `stdio`, discover the exposed catalog, search races/classes, and retrieve exact raw records.
+- The first rollout validates and serves races and classes without requiring unrelated domains to pass validation.
+- Results include stable source/edition context and the mandatory originating-file/source-root provenance envelope.
+- Ambiguous searches return clearly labeled matches; exact retrieval does not silently choose among conflicting sources.
+- `prerelease/`, `homebrew/`, and adventures are disabled by default; adventure opt-in modes and warnings are testable when enabled.
+- The standalone validation command checks the current rollout group without running the MCP server and exits nonzero on incompatibility.
+- Automated protocol tests and a manual ChatGPT smoke test cover the steel thread.
+- Refreshing parent data makes compatible new records discoverable without copying content into MCP-specific files; incompatible shape changes identify the file, domain, record where available, and schema error.
+- Existing site build, lint, and data checks remain unaffected because the upstream app does not depend on the MCP package.
 
 ## Not included in this phase
 
 - Editing or authoring campaign data.
-- Character-sheet or encounter state persistence.
-- Rules adjudication that claims authority beyond the retrieved source text.
+- Character-sheet or encounter-state persistence.
+- Character-building operations; the server remains a read-only data source.
+- Rules adjudication that claims authority beyond retrieved source material.
+- Human-readable rendering of tagged text.
+- Adventure helper UX beyond the configuration controls required for safe opt-in.
 - A hosted/public MCP deployment, authentication, or multi-user service.
-- Changes to the parent fork's data files or broad refactors of the 5etools site.
+- Broad refactors of the 5etools site or changes to its data files.

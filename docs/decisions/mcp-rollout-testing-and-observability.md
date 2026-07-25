@@ -1,0 +1,27 @@
+# MCP Rollout, Testing, and Observability
+
+Status: approved
+
+## Decision
+
+The steel thread exposes races and classes end-to-end through ChatGPT. Expand next through grouped player-facing data, then grouped DM-facing data.
+
+Provide a standalone MCP validation command that can inspect parent data without running the server and exits nonzero on schema/discovery failures. Validate the current rollout group at startup by default; change this only if measured performance requires it.
+
+Include automated MCP protocol tests and a documented manual ChatGPT smoke test using races/classes.
+
+Require observability from the first implementation. Select a logging library and standard structured JSON format before implementation. For local `stdio`, stdout remains protocol-only and logs must use stderr or another explicitly safe sink.
+
+## Rationale
+
+The steel thread proves the full user path quickly without waiting for every domain. Grouped expansion keeps schema work reviewable. Independent validation makes parent-fork edits checkable without starting the server. Observability is required to diagnose startup validation and MCP request failures.
+
+## Consequences
+
+- Player-facing groups precede DM-facing groups.
+- Rendering, derived helpers, encounter/character assistance, and rules adjudication are deferred until the raw read-only surface is reliable.
+- Logging library and JSON schema remain a near-term implementation choice, not a reason to delay the architecture.
+
+## Revisit triggers
+
+Revisit rollout order if a concrete ChatGPT use case requires another domain, or revisit startup validation if measured data volume makes it too slow.
