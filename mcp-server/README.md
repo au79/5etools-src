@@ -3,12 +3,13 @@
 This is an independent package for exposing the enclosing 5etools data repository through MCP.
 
 The package is intentionally separate from the upstream site. It has its own manifest, lockfile, source, tests, and
-documentation. The MCP SDK, schema validator, and logging library will be selected in Phase 1 task P1-02.
+documentation. The package uses the MCP SDK, Zod, and Pino selected in Phase 1. It is currently a transport-only
+integration shell; D&D data access is not implemented yet.
 
 ## Current status
 
-P1-01 establishes the package boundary only. The current entry point is a placeholder; MCP transport and data access are
-not implemented yet.
+P1-03A establishes the MCP transport integration gate. The server completes the MCP lifecycle, responds to standard
+`ping`, advertises a `server_metadata` diagnostic tool, and reports its package metadata and running git commit hash.
 
 ## Development
 
@@ -21,8 +22,14 @@ npm run lint
 npm run typecheck
 npm run build
 npm test
+npm run test:coverage
 npm start
 ```
 
-The placeholder entry point writes only a status message to stderr. Future `stdio` protocol traffic must remain on
-stdout.
+Unit tests for `file.ext` live beside the tested file as `file.unit.test.ext`. Larger cross-module or protocol tests may
+live in `test/` with their integration-oriented name. `npm run test:coverage` requires 100% line, branch, and function
+coverage for production source, excluding only unit-test files and `cli.ts`, which only wires process startup and failure
+handling to `process.exitCode`.
+
+The server writes logs only to stderr. MCP `stdio` protocol traffic remains on stdout. The package does not load D&D
+data, prerelease, homebrew, or adventure content in this integration phase.

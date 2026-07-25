@@ -30,3 +30,7 @@ void test('writes JSON logs to the configured stderr sink', async () => {
     process.stdout.write = originalStdoutWrite;
   }
 });
+
+void test('creates a pretty logger when requested', () => {
+  assert.doesNotThrow(() => createLogger({ pretty: true }));
+});

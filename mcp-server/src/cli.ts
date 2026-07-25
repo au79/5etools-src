@@ -1,3 +1,11 @@
-import { PACKAGE_NAME } from './index.js';
+import { createLogger } from './logger.js';
+import { startStdioServer } from './server.js';
 
-process.stderr.write(`${PACKAGE_NAME}: package boundary established; MCP server not implemented yet\n`);
+async function main(): Promise<void> {
+  await startStdioServer();
+}
+
+void main().catch((error: unknown) => {
+  createLogger().error({ err: error }, 'MCP server failed to start');
+  process.exitCode = 1;
+});

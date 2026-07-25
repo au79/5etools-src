@@ -6,6 +6,8 @@ import pino from 'pino';
 import pretty from 'pino-pretty';
 import { z } from 'zod';
 
+import { ServerMetadataSchema } from '../src/serverMetadata.js';
+
 void test('loads the selected runtime dependencies', () => {
   assert.equal(typeof McpServer, 'function');
   assert.equal(typeof pino, 'function');
@@ -21,4 +23,16 @@ void test('loads the selected runtime dependencies', () => {
   const invalid = record.safeParse({ kind: 'race', name: 7 });
   assert.equal(invalid.success, false);
   if (!invalid.success) assert.deepEqual(invalid.error.issues[0]?.path, ['name']);
+
+  assert.throws(
+    () =>
+      ServerMetadataSchema.parse({
+        description: 'test',
+        gitCommit: 'not-a-commit',
+        gitDirty: false,
+        name: 'test',
+        version: '0.1.0',
+      }),
+    z.ZodError,
+  );
 });
