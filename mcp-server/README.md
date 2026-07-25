@@ -37,3 +37,19 @@ handling to `process.exitCode`.
 
 The server writes logs only to stderr. MCP `stdio` protocol traffic remains on stdout. The package does not load D&D
 data, prerelease, homebrew, or adventure content in this integration phase.
+
+For human-readable local development logs, set `MCP_LOG_PRETTY=true` when launching the server directly:
+
+```bash
+MCP_LOG_PRETTY=true pnpm start
+```
+
+For a reproducible local smoke test with pretty server logs forwarded to the terminal, run:
+
+```bash
+pnpm run smoke:stdio
+```
+
+The MCP Inspector is useful for interactive protocol inspection, but it captures the spawned server's stderr rather than
+relaying it to its UI or the launching terminal. Use `smoke:stdio` when you need readable server logs. The Inspector is
+an external development tool and does not modify this package's PNPM dependencies or lockfile.

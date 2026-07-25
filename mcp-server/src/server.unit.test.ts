@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
+import { PassThrough } from 'node:stream';
 import test from 'node:test';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 
-import { createMcpServer, SERVER_METADATA_TOOL } from '../src/server.js';
 import type { ServerMetadata } from '../src/serverMetadata.js';
+import { createLogger } from './logger.js';
+import { addShutdownLogging, createMcpServer, resolveServerLogger, SERVER_METADATA_TOOL } from './server.js';
 
 const identity: ServerMetadata = {
   description: 'Test MCP server',
@@ -40,4 +42,38 @@ void test('creates a server that advertises identity and serves metadata', async
     await client.close();
     await server.close();
   }
+});
+
+void test('preserves an injected logger', () => {
+  const logger = createLogger({ destination: new PassThrough() });
+
+  assert.equal(resolveServerLogger({ logger }), logger);
+  assert.doesNotThrow(() => resolveServerLogger({}));
+});
+
+void test('logs shutdown without replacing the transport close handler', () => {
+  const messages: string[] = [];
+  const logger = {
+    info: (message: string) => messages.push(message),
+  } as unknown as Pick<ReturnType<typeof createLogger>, 'info'>;
+  let originalHandlerCalls = 0;
+  const transport = {
+    onclose: () => {
+      originalHandlerCalls += 1;
+    },
+  };
+  let endHandler: (() => void) | undefined;
+  const input = {
+    once: (event: string | symbol, handler: () => void) => {
+      assert.equal(event, 'end');
+      endHandler = handler;
+    },
+  };
+
+  addShutdownLogging(transport, logger, input);
+  transport.onclose?.();
+  endHandler?.();
+
+  assert.deepEqual(messages, ['Shutting down MCP server']);
+  assert.equal(originalHandlerCalls, 1);
 });

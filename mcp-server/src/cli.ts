@@ -1,11 +1,13 @@
-import { createLogger } from './logger.js';
+import { createLogger, isPrettyLoggingEnabled } from './logger.js';
 import { startStdioServer } from './server.js';
 
+const logger = createLogger({ pretty: isPrettyLoggingEnabled() });
+
 async function main(): Promise<void> {
-  await startStdioServer();
+  await startStdioServer({ logger });
 }
 
 void main().catch((error: unknown) => {
-  createLogger().error({ err: error }, 'MCP server failed to start');
+  logger.error({ err: error }, 'MCP server failed to start');
   process.exitCode = 1;
 });

@@ -13,6 +13,7 @@
     "build": "pnpm run clean && tsc -p tsconfig.json && node scripts/write-build-metadata.mjs",
     "clean": "node scripts/clean-dist.mjs",
     "start": "node dist/src/cli.js",
+    "smoke:stdio": "pnpm run build && node scripts/smoke-stdio.mjs",
     "test": "pnpm run build && node --test dist/src/*.unit.test.js dist/test/*.test.js",
     "test:coverage": "pnpm run build && node --experimental-test-coverage --test-coverage-include='dist/src/**/*.js' --test-coverage-exclude='dist/src/**/*.unit.test.js' --test-coverage-exclude='dist/src/cli.js' --test-coverage-lines=100 --test-coverage-branches=100 --test-coverage-functions=100 --test dist/src/*.unit.test.js dist/test/*.test.js",
     "lint": "eslint .",
