@@ -8,6 +8,8 @@ The steel thread exposes races and classes end-to-end through ChatGPT. Expand ne
 
 Provide a standalone MCP validation command that can inspect parent data without running the server and exits nonzero on schema/discovery failures. Validate the current rollout group at startup by default; change this only if measured performance requires it.
 
+The package must compile and type-check its TypeScript source before tests or the local server are considered valid.
+
 Include automated MCP protocol tests and a documented manual ChatGPT smoke test using races/classes.
 
 Require observability from the first implementation. Select a logging library and standard structured JSON format before implementation. For local `stdio`, stdout remains protocol-only and logs must use stderr or another explicitly safe sink.
@@ -21,6 +23,7 @@ The steel thread proves the full user path quickly without waiting for every dom
 - Player-facing groups precede DM-facing groups.
 - Rendering, derived helpers, encounter/character assistance, and rules adjudication are deferred until the raw read-only surface is reliable.
 - Logging library and JSON schema remain a near-term implementation choice, not a reason to delay the architecture.
+- The resolved latest-stable TypeScript version is pinned in the package lockfile and can be refreshed deliberately.
 
 ## Revisit triggers
 

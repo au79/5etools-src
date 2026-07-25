@@ -19,11 +19,11 @@ These notes are intentionally lighter than full ADRs. Update the relevant note w
 
 ### Phase 1: Architecture and compatibility decisions
 
-Confirm the supported MCP SDK/transport, Node version policy, ChatGPT launch configuration, data-root configuration, edition/source semantics, default source scope, versioned domain manifest, strict schema behavior, observability approach, and adventure safety controls. The decisions captured above are the working Phase 1 baseline.
+Confirm the supported MCP SDK/transport, Node version policy, latest-stable TypeScript toolchain, ChatGPT launch configuration, data-root configuration, edition/source semantics, default source scope, versioned domain manifest, strict schema behavior, observability approach, and adventure safety controls. The decisions captured above are the working Phase 1 baseline.
 
 ### Phase 2: Read-only catalog and lookup core
 
-Implement the catalog, rollout-group schema validation, lazy data access, stable identifiers, provenance envelopes, source-aware filtering, bounded search, exact lookup, ambiguity handling, and predictable errors. Keep this layer independently testable without an MCP client.
+Implement the TypeScript catalog, rollout-group schema validation, lazy data access, stable identifiers, provenance envelopes, source-aware filtering, bounded search, exact lookup, ambiguity handling, and predictable errors. Keep this layer independently testable without an MCP client.
 
 ### Phase 3: MCP adapter and steel thread
 

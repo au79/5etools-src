@@ -4,7 +4,7 @@ Status: approved
 
 ## Decision
 
-Keep the MCP domain set explicit and versioned. Use strict Zod schemas and domain adapters based on the current upstream shapes. Validate only the domains in the current rollout group, beginning with races and classes, and expand validation with each rollout group.
+Keep the MCP domain set explicit and versioned. Use strict Zod schemas and TypeScript domain adapters based on the current upstream shapes. Validate only the domains in the current rollout group, beginning with races and classes, and expand validation with each rollout group.
 
 Fail fast on missing collections, changed types/requiredness/nested structure, unknown top-level collections, or unrecognized fields. Additive upstream fields require intentional schema review. There is no silent best-effort fallback.
 
@@ -20,6 +20,7 @@ Strict validation makes parent-fork refreshes visible instead of silently produc
 
 - New records and sources are accepted when they conform to an existing schema.
 - Schema changes intentionally require adapter/test updates.
+- Compile-time TypeScript types and runtime Zod schemas should describe the same MCP-facing contracts; neither replaces runtime validation of upstream JSON.
 - Recursive or heterogeneous structures such as `entries` and book/adventure trees need explicit schema treatment and documented extension points.
 - Character-builder assistance is a future read-only consumer of structured options, prerequisites, choices, and relationships; Phase 1 provides no character-building operations.
 
