@@ -2,7 +2,7 @@
 
 ## Goal
 
-Provide a local MCP server that exposes this repository's D&D data to ChatGPT for personal DM/player assistance and to other agents. Prove the wiring first with a transport-only MCP steel thread, then add a read-only races/classes steel thread and expand through grouped player-facing and DM-facing domains.
+Provide an MCP server that exposes this repository's D&D data to ChatGPT for personal DM/player assistance and to other agents. Prove the wiring first with a transport-only local MCP steel thread, then make it reachable by ChatGPT through Secure MCP Tunnel or another supported remote endpoint before adding the read-only races/classes steel thread.
 
 ## Phase 1 decision index
 
@@ -27,7 +27,7 @@ Implement the TypeScript catalog, rollout-group schema validation, lazy data acc
 
 ### Phase 3: MCP adapter and steel thread
 
-The transport-only integration gate is delivered first, independently of the data catalog. Then expose the validated races/classes surface through local `stdio` with raw `search` and `get` operations. Add the automated protocol tests and documented manual ChatGPT smoke test. Keep stdout protocol-only and route observability to stderr or another explicitly safe sink.
+The transport-only integration gate is delivered first, independently of the data catalog. Then run OpenAI's external `tunnel-client` beside the local server to make that shell reachable from ChatGPT through Secure MCP Tunnel, while retaining local `stdio` for development and automated tests. Provide a consumer-oriented quickstart in `mcp-server/README.md` and link it to one canonical Markdown ChatGPT/tunnel runbook. The runbook should be human-readable and AI-consumable: stable headings, explicit prerequisites, named variables, copy/paste commands, expected results, verification checkpoints, safe secret handling, and troubleshooting branches. Expose the validated races/classes surface with raw `search` and `get` operations. Add the automated protocol tests and documented manual ChatGPT smoke test. Keep stdout protocol-only and route observability to stderr or another explicitly safe sink.
 
 ### Phase 4: Validation, refresh workflow, and client documentation
 
@@ -52,13 +52,18 @@ Expand through player-facing groups first, then DM-facing groups. Only after the
 ## Acceptance criteria for the detailed implementation
 
 - ChatGPT can launch the local server over `stdio`, discover the exposed catalog, search races/classes, and retrieve exact raw records.
-- Before data loading, a ChatGPT-compatible client can complete `initialize`/`initialized`, use standard `ping`, discover the diagnostic tool, and retrieve the server package version and running git commit hash.
+- Before data loading, a local MCP client can complete `initialize`/`initialized`, use standard `ping`, discover the diagnostic tool, and retrieve the server package version and running git commit hash.
+- Before the D&D data steel thread is considered complete, ChatGPT can reach the same diagnostic surface through Secure MCP Tunnel or another supported remote MCP endpoint.
 - The first rollout validates and serves races and classes without requiring unrelated domains to pass validation.
 - Results include stable source/edition context and the mandatory originating-file/source-root provenance envelope.
 - Ambiguous searches return clearly labeled matches; exact retrieval does not silently choose among conflicting sources.
 - `prerelease/`, `homebrew/`, and adventures are disabled by default; adventure opt-in modes and warnings are testable when enabled.
 - The standalone validation command checks the current rollout group without running the MCP server and exits nonzero on incompatibility.
 - Automated protocol tests and a manual ChatGPT smoke test cover the steel thread.
+- Unit tests for `file.ext` use the adjacent `file.unit.test.ext` naming convention. Larger cross-module and protocol
+  tests remain in the package's separate `test/` directory. Covered production source must maintain 100% line, branch,
+  and function coverage; only unit-test files and the process-entry `cli.ts` glue are excluded because the latter only
+  wires startup failure handling to `process.exitCode`.
 - Refreshing parent data makes compatible new records discoverable without copying content into MCP-specific files; incompatible shape changes identify the file, domain, record where available, and schema error.
 - Existing site build, lint, and data checks remain unaffected because the upstream app does not depend on the MCP package.
 
