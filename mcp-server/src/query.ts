@@ -72,18 +72,33 @@ function order(records: readonly CatalogRecord[]): CatalogRecord[] {
   return [...records].sort((left, right) => left.id.localeCompare(right.id));
 }
 
+function getSearchRank(record: CatalogRecord, query: string): number {
+  const name = normalize(record.data.name?.toString() ?? '');
+  if (name === query) return 0;
+  if (name.startsWith(query)) return 1;
+  if (name.includes(query)) return 2;
+  return 3;
+}
+
+function orderSearchResults(records: readonly CatalogRecord[], query: string): CatalogRecord[] {
+  return [...records].sort(
+    (left, right) => getSearchRank(left, query) - getSearchRank(right, query) || left.id.localeCompare(right.id),
+  );
+}
+
 export function searchCatalog(catalog: PhaseOneCatalog, options: SearchCatalogOptions): readonly CatalogRecord[] {
   const query = requireQuery(options.query);
   const limit = getLimit(options.limit);
 
-  return order(
+  return orderSearchResults(
     catalog.records.filter((record) => {
       if (!matchesFilters(record, options)) return false;
       return (
-        record.data.name?.toString().toLocaleLowerCase().includes(query) ||
+        normalize(record.data.name?.toString() ?? '').includes(query) ||
         JSON.stringify(record.data).toLocaleLowerCase().includes(query)
       );
     }),
+    query,
   ).slice(0, limit);
 }
 

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
+import type { PhaseOneCatalog } from './catalog.js';
 import { createPhaseOneCatalog } from './catalog.js';
 import { getCatalogRecord, QueryError, searchCatalog } from './query.js';
 
@@ -25,10 +26,7 @@ void describe('Catalog queries', () => {
     assert.ok(
       records.every((record) => record.domain === 'race' && record.source === 'PHB' && record.sourceRoot === 'data'),
     );
-    assert.deepEqual(
-      records,
-      [...records].sort((left, right) => left.id.localeCompare(right.id)),
-    );
+    assert.equal(records[0]?.data.name, 'Human');
   });
 
   void test('gets a raw provenance record by stable ID', () => {
@@ -37,6 +35,50 @@ void describe('Catalog queries', () => {
 
     assert.equal(record?.data.name, 'Human');
     assert.equal(record?.file, 'data/races.json');
+  });
+
+  void test('ranks exact and name matches ahead of incidental text matches', () => {
+    const catalog = {
+      records: [
+        {
+          data: { entries: ['A human-friendly description.'], name: 'Dragonborn', source: 'TST' },
+          domain: 'race',
+          file: 'data/races.json',
+          id: 'race/dragonborn/tst',
+          source: 'TST',
+          sourceRoot: 'data',
+        },
+        {
+          data: { name: 'Variant Human', source: 'TST' },
+          domain: 'race',
+          file: 'data/races.json',
+          id: 'race/variant-human/tst',
+          source: 'TST',
+          sourceRoot: 'data',
+        },
+        {
+          data: { name: 'Human Variant', source: 'TST' },
+          domain: 'race',
+          file: 'data/races.json',
+          id: 'race/human-variant/tst',
+          source: 'TST',
+          sourceRoot: 'data',
+        },
+        {
+          data: { name: 'Human', source: 'TST' },
+          domain: 'race',
+          file: 'data/races.json',
+          id: 'race/human/tst',
+          source: 'TST',
+          sourceRoot: 'data',
+        },
+      ],
+    } as unknown as PhaseOneCatalog;
+
+    assert.deepEqual(
+      searchCatalog(catalog, { query: 'human' }).map((record) => record.data.name),
+      ['Human', 'Human Variant', 'Variant Human', 'Dragonborn'],
+    );
   });
 
   void test('reports ambiguity with safe candidate labels', () => {
