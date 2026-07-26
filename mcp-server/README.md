@@ -11,6 +11,27 @@ integration shell; D&D data access is not implemented yet.
 P1-03A establishes the MCP transport integration gate. The server completes the MCP lifecycle, responds to standard
 `ping`, advertises a `server_metadata` diagnostic tool, and reports its package metadata and running git commit hash.
 
+## Resume here: OpenAI ChatGPT
+
+The only documented remote client integration is **OpenAI ChatGPT via Secure MCP Tunnel**. It does not cover Cursor,
+Claude, or any other MCP client.
+
+The `codex:tunnel:*` script prefix is a local package-command namespace; it does not add a Codex client integration.
+
+If you have already created `mcp-server/.env`, initialized the profile, and created the ChatGPT plugin, restart the
+tunnel from this directory with:
+
+```bash
+pnpm codex:tunnel:run
+```
+
+Then use the plugin in a new ChatGPT conversation. For initial setup, recovery steps, and troubleshooting, follow the
+[OpenAI ChatGPT Secure MCP Tunnel runbook](docs/chatgpt-secure-mcp-tunnel.md). `tunnel-client` is an
+operator-installed tool, not an npm dependency of this package.
+
+For initial setup or after changing the profile, run `pnpm codex:tunnel:doctor` **before** `pnpm codex:tunnel:run`.
+`doctor` cannot pass while the running daemon owns its local health port.
+
 ## Development
 
 From this directory:
