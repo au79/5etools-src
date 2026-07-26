@@ -19,6 +19,16 @@ function createFixtureRoot(): string {
   return root;
 }
 
+function createAlternateSourceRoot(root: string, name: string): void {
+  mkdirSync(join(root, name, 'class'), { recursive: true });
+  writeFileSync(join(root, name, 'races.json'), '{ "race": [], "subrace": [] }');
+  writeFileSync(join(root, name, 'class', 'index.json'), '{}');
+  writeFileSync(
+    join(root, name, 'class', 'class-fixture.json'),
+    '{ "class": [], "subclass": [], "classFeature": [], "subclassFeature": [] }',
+  );
+}
+
 void describe('Phase 1 catalog', () => {
   void test('keeps validated records intact and attaches provenance', () => {
     const projectRoot = fileURLToPath(new URL('../../..', import.meta.url));
@@ -92,6 +102,58 @@ void describe('Phase 1 catalog', () => {
     assert.throws(
       () => createPhaseOneCatalog(root),
       (error: unknown) => error instanceof CatalogError && error.message.includes('Duplicate catalog ID'),
+    );
+  });
+
+  void test('rejects collisions between enabled source roots with provenance', () => {
+    const root = createFixtureRoot();
+    createAlternateSourceRoot(root, 'homebrew');
+    writeFileSync(
+      join(root, 'data', 'races.json'),
+      '{ "race": [{ "name": "Human", "source": "PHB" }], "subrace": [] }',
+    );
+    writeFileSync(
+      join(root, 'homebrew', 'races.json'),
+      '{ "race": [{ "name": "Human", "source": "PHB" }], "subrace": [] }',
+    );
+
+    assert.throws(
+      () =>
+        createPhaseOneCatalog(root, [
+          { name: 'data', path: join(root, 'data') },
+          { name: 'homebrew', path: join(root, 'homebrew') },
+        ]),
+      (error: unknown) =>
+        error instanceof CatalogError &&
+        error.message.includes('data/races.json (data)') &&
+        error.message.includes('homebrew/races.json (homebrew)'),
+    );
+  });
+
+  void test('catalogs enabled alternate roots with source-root provenance', () => {
+    const root = createFixtureRoot();
+    createAlternateSourceRoot(root, 'homebrew');
+    writeFileSync(
+      join(root, 'homebrew', 'races.json'),
+      '{ "race": [{ "name": "Elf", "source": "HB" }], "subrace": [] }',
+    );
+
+    const catalog = createPhaseOneCatalog(root, [
+      { name: 'data', path: join(root, 'data') },
+      { name: 'homebrew', path: join(root, 'homebrew') },
+    ]);
+    const elf = catalog.records.find((record) => record.data.name === 'Elf');
+
+    assert.ok(elf);
+    assert.equal(elf.sourceRoot, 'homebrew');
+    assert.equal(elf.file, 'homebrew/races.json');
+    assert.ok(catalog.manifest.files.some((file) => file.path === 'homebrew/races.json'));
+  });
+
+  void test('requires at least one source root', () => {
+    assert.throws(
+      () => createPhaseOneCatalog(createFixtureRoot(), []),
+      (error: unknown) => error instanceof CatalogError && error.message.includes('At least one source root'),
     );
   });
 

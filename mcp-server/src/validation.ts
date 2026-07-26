@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { z, type ZodType } from 'zod';
 
-import { createPhaseOneManifest } from './manifest.js';
+import { createPhaseOneManifest, DEFAULT_SOURCE_ROOT } from './manifest.js';
 
 export const PHASE_ONE_COLLECTIONS = [
   'race',
@@ -372,8 +372,8 @@ export function validateCollectionFile(
   ) as Readonly<Record<PhaseOneCollection, readonly RawRecord[] | undefined>>;
 }
 
-export function validatePhaseOneProjectRoot(projectRoot: string): ValidationResult {
-  const manifest = createPhaseOneManifest(projectRoot);
+export function validatePhaseOneProjectRoot(projectRoot: string, sourceRoot = DEFAULT_SOURCE_ROOT): ValidationResult {
+  const manifest = createPhaseOneManifest(projectRoot, sourceRoot);
   const files: string[] = [];
 
   for (const file of manifest.files) {

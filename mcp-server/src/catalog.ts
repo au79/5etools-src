@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { createPhaseOneManifest, type PhaseOneManifest } from './manifest.js';
+import { createPhaseOneManifest, DEFAULT_SOURCE_ROOT, type PhaseOneManifest } from './manifest.js';
 import { type PhaseOneCollection, validateCollectionFile } from './validation.js';
 
 type RawRecord = Readonly<Record<string, unknown>>;
@@ -20,6 +20,11 @@ export interface CatalogRecord {
 export interface PhaseOneCatalog {
   readonly manifest: PhaseOneManifest;
   readonly records: readonly CatalogRecord[];
+}
+
+export interface CatalogSourceRoot {
+  readonly name: string;
+  readonly path: string;
 }
 
 export interface CatalogDiagnostics {
@@ -129,33 +134,53 @@ function createCatalogRecord(domain: PhaseOneCollection, file: string, record: R
   };
 }
 
-export function createPhaseOneCatalog(projectRoot: string): PhaseOneCatalog {
-  const manifest = createPhaseOneManifest(projectRoot);
+export function createPhaseOneCatalog(
+  projectRoot: string,
+  sourceRoots: readonly CatalogSourceRoot[] = [
+    { name: DEFAULT_SOURCE_ROOT, path: join(projectRoot, DEFAULT_SOURCE_ROOT) },
+  ],
+): PhaseOneCatalog {
+  if (sourceRoots.length === 0) throw new CatalogError('At least one source root must be enabled.');
+
   const records: CatalogRecord[] = [];
   const recordsById = new Map<string, CatalogRecord>();
+  const manifests: PhaseOneManifest[] = [];
 
-  for (const file of manifest.files) {
-    if (file.role !== 'entity') continue;
-    const value: unknown = JSON.parse(readFileSync(join(projectRoot, file.path), 'utf8'));
-    const collections = file.collections.flatMap((collection) => collection.domain ?? []);
-    const validated = validateCollectionFile(file.path, value, collections);
+  for (const sourceRoot of sourceRoots) {
+    const manifest = createPhaseOneManifest(projectRoot, sourceRoot.name);
+    manifests.push(manifest);
 
-    for (const collection of collections) {
-      for (const record of validated[collection]!) {
-        const catalogRecord = createCatalogRecord(collection, file.path, record);
-        const conflictingRecord = recordsById.get(catalogRecord.id);
-        if (conflictingRecord !== undefined) {
-          throw new CatalogError(
-            `Duplicate catalog ID ${catalogRecord.id} in ${conflictingRecord.file} and ${file.path}.`,
-          );
+    for (const file of manifest.files) {
+      if (file.role !== 'entity') continue;
+      const relativePath = file.path.slice(`${sourceRoot.name}/`.length);
+      const value: unknown = JSON.parse(readFileSync(join(sourceRoot.path, relativePath), 'utf8'));
+      const collections = file.collections.flatMap((collection) => collection.domain ?? []);
+      const validated = validateCollectionFile(file.path, value, collections);
+
+      for (const collection of collections) {
+        for (const record of validated[collection]!) {
+          const catalogRecord = createCatalogRecord(collection, file.path, record);
+          const conflictingRecord = recordsById.get(catalogRecord.id);
+          if (conflictingRecord !== undefined) {
+            throw new CatalogError(
+              `Duplicate catalog ID ${catalogRecord.id} in ${conflictingRecord.file} (${conflictingRecord.sourceRoot}) and ${file.path} (${catalogRecord.sourceRoot}).`,
+            );
+          }
+          recordsById.set(catalogRecord.id, catalogRecord);
+          records.push(catalogRecord);
         }
-        recordsById.set(catalogRecord.id, catalogRecord);
-        records.push(catalogRecord);
       }
     }
   }
 
-  return { manifest, records };
+  const manifest = manifests[0]!;
+  return {
+    manifest: {
+      ...manifest,
+      files: manifests.flatMap((sourceManifest) => sourceManifest.files),
+    },
+    records,
+  };
 }
 
 export function getCatalogDiagnostics(catalog: PhaseOneCatalog): CatalogDiagnostics {

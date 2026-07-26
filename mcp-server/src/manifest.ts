@@ -53,9 +53,6 @@ export class ManifestError extends Error {
   }
 }
 
-const RACES_PATH = 'data/races.json';
-const CLASS_DIRECTORY_PATH = 'data/class';
-const CLASS_INDEX_PATH = 'data/class/index.json';
 const RACE_COLLECTIONS = new Map<string, PhaseOneDomain>([
   ['race', 'race'],
   ['subrace', 'subrace'],
@@ -66,6 +63,8 @@ const CLASS_COLLECTIONS = new Map<string, PhaseOneDomain>([
   ['classFeature', 'classFeature'],
   ['subclassFeature', 'subclassFeature'],
 ]);
+
+export const DEFAULT_SOURCE_ROOT = 'data';
 
 function toManifestPath(projectRoot: string, path: string): string {
   return relative(projectRoot, path).replaceAll('\\', '/');
@@ -135,10 +134,11 @@ function classifyClassCompanion(projectRoot: string, path: string, fileName: str
   return { collections: [], path: toManifestPath(projectRoot, path), role: 'presentation' };
 }
 
-export function createPhaseOneManifest(projectRoot: string): PhaseOneManifest {
-  const racesPath = join(projectRoot, RACES_PATH);
-  const classDirectory = join(projectRoot, CLASS_DIRECTORY_PATH);
-  const classIndexPath = join(projectRoot, CLASS_INDEX_PATH);
+export function createPhaseOneManifest(projectRoot: string, sourceRoot = DEFAULT_SOURCE_ROOT): PhaseOneManifest {
+  const sourcePath = join(projectRoot, sourceRoot);
+  const racesPath = join(sourcePath, 'races.json');
+  const classDirectory = join(sourcePath, 'class');
+  const classIndexPath = join(sourcePath, 'class', 'index.json');
   requireFile(racesPath, 'race source file');
   if (!existsSync(classDirectory) || !statSync(classDirectory).isDirectory()) {
     throw new ManifestError(`Required class source directory is missing: ${classDirectory}`);
