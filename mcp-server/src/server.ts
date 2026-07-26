@@ -23,11 +23,7 @@ export function resolveServerLogger(options: StartStdioServerOptions): Logger {
   return options.logger ?? createLogger();
 }
 
-export function addShutdownLogging(
-  transport: CloseableTransport,
-  logger: Pick<Logger, 'info'>,
-  input: EndAwareInput,
-): void {
+export function addShutdownLogging(transport: CloseableTransport, logger: Logger, input: EndAwareInput): void {
   let hasLoggedShutdown = false;
   const logShutdown = () => {
     if (hasLoggedShutdown) return;

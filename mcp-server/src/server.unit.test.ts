@@ -5,9 +5,9 @@ import test from 'node:test';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 
-import type { ServerMetadata } from '../src/serverMetadata.js';
 import { createLogger } from './logger.js';
 import { addShutdownLogging, createMcpServer, resolveServerLogger, SERVER_METADATA_TOOL } from './server.js';
+import type { ServerMetadata } from './serverMetadata.js';
 
 const identity: ServerMetadata = {
   description: 'Test MCP server',
@@ -55,7 +55,7 @@ void test('logs shutdown without replacing the transport close handler', () => {
   const messages: string[] = [];
   const logger = {
     info: (message: string) => messages.push(message),
-  } as unknown as Pick<ReturnType<typeof createLogger>, 'info'>;
+  } as unknown as ReturnType<typeof createLogger>;
   let originalHandlerCalls = 0;
   const transport = {
     onclose: () => {
