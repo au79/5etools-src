@@ -3,7 +3,7 @@ import test from 'node:test';
 
 import { z } from 'zod';
 
-import { getServerMetadata, parseServerMetadata } from '../src/serverMetadata.js';
+import { getServerMetadata, parseServerMetadata } from './serverMetadata.js';
 
 const validMetadata = {
   description: 'Test MCP server',

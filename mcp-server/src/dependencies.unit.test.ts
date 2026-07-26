@@ -6,7 +6,7 @@ import pino from 'pino';
 import pretty from 'pino-pretty';
 import { z } from 'zod';
 
-import { ServerMetadataSchema } from '../src/serverMetadata.js';
+import { ServerMetadataSchema } from './serverMetadata.js';
 
 void test('loads the selected runtime dependencies', () => {
   assert.equal(typeof McpServer, 'function');

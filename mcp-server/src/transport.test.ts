@@ -5,9 +5,9 @@ import { fileURLToPath } from 'node:url';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
-import { PACKAGE_NAME } from '../src/index.js';
-import { SERVER_METADATA_TOOL } from '../src/server.js';
-import { getServerMetadata } from '../src/serverMetadata.js';
+import { PACKAGE_NAME } from './index.js';
+import { SERVER_METADATA_TOOL } from './server.js';
+import { getServerMetadata } from './serverMetadata.js';
 
 function isTextContent(value: unknown): value is { readonly text: string; readonly type: 'text' } {
   if (typeof value !== 'object' || value === null) return false;
@@ -21,7 +21,7 @@ function getFirstContent(value: unknown): unknown {
 }
 
 void test('completes the MCP stdio integration gate', async () => {
-  const cliPath = fileURLToPath(new URL('../src/cli.js', import.meta.url));
+  const cliPath = fileURLToPath(new URL('./cli.js', import.meta.url));
   const packageRoot = fileURLToPath(new URL('../../', import.meta.url));
   const identity = getServerMetadata();
   const transport = new StdioClientTransport({
