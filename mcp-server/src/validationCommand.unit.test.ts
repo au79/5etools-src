@@ -15,6 +15,7 @@ function createFixtureRoot(): string {
   writeFileSync(join(root, 'data', 'feats.json'), '{ "feat": [] }');
   writeFileSync(join(root, 'data', 'optionalfeatures.json'), '{ "optionalfeature": [] }');
   writeFileSync(join(root, 'data', 'bastions.json'), '{ "facility": [] }');
+  writeFileSync(join(root, 'data', 'actions.json'), '{ "action": [] }');
   writeFileSync(join(root, 'data', 'items.json'), '{ "item": [], "itemGroup": [] }');
   writeFileSync(
     join(root, 'data', 'items-base.json'),
@@ -39,6 +40,7 @@ function addSourceRoot(root: string, name: string): void {
   writeFileSync(join(root, name, 'feats.json'), '{ "feat": [] }');
   writeFileSync(join(root, name, 'optionalfeatures.json'), '{ "optionalfeature": [] }');
   writeFileSync(join(root, name, 'bastions.json'), '{ "facility": [] }');
+  writeFileSync(join(root, name, 'actions.json'), '{ "action": [] }');
   writeFileSync(join(root, name, 'items.json'), '{ "item": [], "itemGroup": [] }');
   writeFileSync(
     join(root, name, 'items-base.json'),
@@ -60,8 +62,8 @@ void describe('Validation command', () => {
     const result = runValidationCommand({ defaultProjectRoot: root, environment: {}, workingDirectory: root });
 
     assert.equal(result.results.length, 1);
-    assert.equal(result.results[0]?.files.length, 10);
-    assert.equal(formatValidationSummary(result), 'Validation succeeded: 10 files across data.');
+    assert.equal(result.results[0]?.files.length, 11);
+    assert.equal(formatValidationSummary(result), 'Validation succeeded: 11 files across data.');
   });
 
   void test('uses the same source precedence as server startup', () => {

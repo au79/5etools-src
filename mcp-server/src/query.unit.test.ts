@@ -81,6 +81,26 @@ void describe('Catalog queries', () => {
     );
   });
 
+  void test('searches actions and keeps duplicate names ambiguous without a source', () => {
+    const catalog = getCatalog();
+
+    assert.equal(
+      searchCatalog(catalog, { domain: 'action', query: 'attack', source: 'PHB' })[0]?.id,
+      'action/attack/phb',
+    );
+    assert.equal(
+      getCatalogRecord(catalog, { domain: 'action', name: 'Attack', source: 'PHB' })?.id,
+      'action/attack/phb',
+    );
+    assert.throws(
+      () => getCatalogRecord(catalog, { domain: 'action', name: 'Attack' }),
+      (error: unknown) =>
+        error instanceof QueryError &&
+        error.candidates.some((candidate) => candidate.id === 'action/attack/phb') &&
+        error.candidates.some((candidate) => candidate.id === 'action/attack/xphb'),
+    );
+  });
+
   void test('searches and safely retrieves every equipment domain', () => {
     const catalog = getCatalog();
     const records = [

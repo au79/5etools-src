@@ -16,6 +16,7 @@ function createFixtureRoot(): string {
   writeFileSync(join(root, 'data', 'feats.json'), '{ "feat": [] }');
   writeFileSync(join(root, 'data', 'optionalfeatures.json'), '{ "optionalfeature": [] }');
   writeFileSync(join(root, 'data', 'bastions.json'), '{ "facility": [] }');
+  writeFileSync(join(root, 'data', 'actions.json'), '{ "action": [] }');
   writeFileSync(join(root, 'data', 'items.json'), '{ "item": [], "itemGroup": [] }');
   writeFileSync(
     join(root, 'data', 'items-base.json'),
@@ -40,6 +41,7 @@ function createAlternateSourceRoot(root: string, name: string): void {
   writeFileSync(join(root, name, 'feats.json'), '{ "feat": [] }');
   writeFileSync(join(root, name, 'optionalfeatures.json'), '{ "optionalfeature": [] }');
   writeFileSync(join(root, name, 'bastions.json'), '{ "facility": [] }');
+  writeFileSync(join(root, name, 'actions.json'), '{ "action": [] }');
   writeFileSync(join(root, name, 'items.json'), '{ "item": [], "itemGroup": [] }');
   writeFileSync(
     join(root, name, 'items-base.json'),
@@ -100,6 +102,12 @@ void describe('Phase 1 catalog', () => {
     assert.equal(acidSplash?.id, 'spell/acid%20splash/phb');
     assert.equal(acidSplash?.file, 'data/spells/spells-phb.json');
 
+    const attack = catalog.records.find(
+      (record) => record.domain === 'action' && record.data.name === 'Attack' && record.source === 'PHB',
+    );
+    assert.equal(attack?.id, 'action/attack/phb');
+    assert.equal(attack?.file, 'data/actions.json');
+
     const equipment = [
       ['item', 'Bag of Holding', 'DMG', 'item/bag%20of%20holding/dmg', 'data/items.json'],
       ['itemGroup', 'Arcane Focus', 'PHB', 'itemgroup/arcane%20focus/phb', 'data/items.json'],
@@ -155,6 +163,7 @@ void describe('Phase 1 catalog', () => {
     );
     assert.equal(createRecordId('facility', { name: 'Ancient Altar', source: 'RHW' }), 'facility/ancient%20altar/rhw');
     assert.equal(createRecordId('spell', { name: 'Acid Splash', source: 'PHB' }), 'spell/acid%20splash/phb');
+    assert.equal(createRecordId('action', { name: 'Attack', source: 'PHB' }), 'action/attack/phb');
     assert.equal(createRecordId('item', { name: 'Bag of Holding', source: 'DMG' }), 'item/bag%20of%20holding/dmg');
     assert.equal(createRecordId('itemProperty', { abbreviation: 'A', source: 'PHB' }), 'itemproperty/a/phb');
     assert.equal(createRecordId('class', { name: 'Wizard', source: 'PHB' }), 'class/wizard/phb');

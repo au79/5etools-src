@@ -22,6 +22,7 @@ function createFixtureRoot(): string {
   writeFileSync(join(root, 'data', 'feats.json'), '{ "feat": [] }');
   writeFileSync(join(root, 'data', 'optionalfeatures.json'), '{ "optionalfeature": [] }');
   writeFileSync(join(root, 'data', 'bastions.json'), '{ "facility": [] }');
+  writeFileSync(join(root, 'data', 'actions.json'), '{ "action": [] }');
   writeFileSync(join(root, 'data', 'items.json'), '{ "item": [], "itemGroup": [] }');
   writeFileSync(
     join(root, 'data', 'items-base.json'),
@@ -50,6 +51,7 @@ void describe('Phase 1 manifest', () => {
     assert.ok(manifest.files.some((file) => file.path === 'data/feats.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/optionalfeatures.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/bastions.json' && file.role === 'entity'));
+    assert.ok(manifest.files.some((file) => file.path === 'data/actions.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/items.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/items-base.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/vehicles.json' && file.role === 'entity'));
@@ -158,6 +160,7 @@ void describe('Phase 1 manifest', () => {
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'feats.json'), '{ "feat": [] }');
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'optionalfeatures.json'), '{ "optionalfeature": [] }');
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'bastions.json'), '{ "facility": [] }');
+    writeFileSync(join(missingClassDirectoryRoot, 'data', 'actions.json'), '{ "action": [] }');
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'items.json'), '{ "item": [], "itemGroup": [] }');
     writeFileSync(
       join(missingClassDirectoryRoot, 'data', 'items-base.json'),

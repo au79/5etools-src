@@ -100,6 +100,14 @@ void describe('MCP stdio transport', () => {
         'spell/acid%20splash/phb',
       );
 
+      const action = await client.callTool({
+        arguments: { domain: 'action', name: 'Attack', source: 'PHB' },
+        name: GET_TOOL,
+      });
+      const actionContent = getFirstContent(action.content);
+      if (!isTextContent(actionContent)) throw new Error('The action get tool did not return text content');
+      assert.equal((JSON.parse(actionContent.text) as { readonly id?: unknown }).id, 'action/attack/phb');
+
       const equipmentGets = [
         [{ domain: 'item', name: 'Bag of Holding', source: 'DMG' }, 'item/bag%20of%20holding/dmg'],
         [{ domain: 'itemGroup', name: 'Arcane Focus', source: 'PHB' }, 'itemgroup/arcane%20focus/phb'],
