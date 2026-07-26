@@ -76,7 +76,7 @@ and retains its existing npm workflow.
 Unit tests for `file.ext` live beside the tested file as `file.unit.test.ext`. Larger cross-module or protocol tests may
 live in `test/` with their integration-oriented name. `pnpm run test:coverage` requires 100% line, branch, and function
 coverage for production source, excluding only unit-test files and `cli.ts`, which only wires process startup and failure
-handling to `process.exitCode`.
+handling to `process.exitCode`, and `validationCli.ts`, which only wires validation failures to `process.exitCode`.
 
 The server writes logs only to stderr. MCP `stdio` protocol traffic remains on stdout. Startup and each tool action emit
 structured start/completion/failure events with a correlation ID and duration. Logs contain only bounded safe context:
@@ -96,6 +96,23 @@ The corresponding environment variables are `MCP_5ETOOLS_ROOT`, `MCP_5ETOOLS_CON
 `MCP_5ETOOLS_LOG_LEVEL`, and `MCP_5ETOOLS_LOG_PRETTY`. The config file also supports `adventures` and
 `validationRollout`; those controls are retained for the broader rollout, but the current public surface remains the
 read-only Phase 1 races/classes catalog.
+
+## Validate data
+
+Run the same configuration and source-root validation used at server startup without starting an MCP process:
+
+```bash
+pnpm run validate:data
+```
+
+Pass the same CLI options after `--`, for example:
+
+```bash
+pnpm run validate:data -- --sources data,homebrew
+```
+
+On success, the command prints a concise file/source-root summary and exits zero. Configuration, discovery, or schema
+failures are printed to stderr and exit nonzero.
 
 For human-readable local development logs, set `MCP_5ETOOLS_LOG_PRETTY=true` when launching the server directly:
 

@@ -72,12 +72,13 @@ CONTROL_PLANE_API_KEY='replace_with_your_runtime_api_key'
 
 ```bash
 pnpm run check
+pnpm run validate:data
 pnpm run smoke:stdio
 ```
 
-Expected result: the smoke command reports that `ping`, `tools/list`, and `server_metadata` passed, and lists
-`server_metadata`, `search`, and `get` as advertised tools. This verifies the local stdio server before adding the
-tunnel.
+Expected result: the validation command reports the validated file/source-root summary. The smoke command reports that
+`ping`, `tools/list`, and `server_metadata` passed, and lists `server_metadata`, `search`, and `get` as advertised
+tools. This verifies the local stdio server before adding the tunnel.
 
 ## Create the stdio tunnel profile
 
