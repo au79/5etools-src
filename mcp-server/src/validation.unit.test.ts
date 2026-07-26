@@ -46,8 +46,7 @@ void describe('Phase 1 validation', () => {
           { entries: [{ entries: 'not an array', type: 'entries' }], name: 'Human', source: 'PHB' },
         ]),
       (error: unknown) =>
-        error instanceof ValidationError &&
-        error.failures.some((failure) => failure.path.join('.') === '0.entries.0'),
+        error instanceof ValidationError && error.failures.some((failure) => failure.path.join('.') === '0.entries.0'),
     );
     assert.throws(
       () =>
@@ -55,8 +54,7 @@ void describe('Phase 1 validation', () => {
           { entries: [{ type: 'entries', unsupported: true }], name: 'Human', source: 'PHB' },
         ]),
       (error: unknown) =>
-        error instanceof ValidationError &&
-        error.failures.some((failure) => failure.path.join('.') === '0.entries.0'),
+        error instanceof ValidationError && error.failures.some((failure) => failure.path.join('.') === '0.entries.0'),
     );
     assert.throws(
       () => validateCollectionRecords('data/races.json', 'race', [{ name: 'Human' }]),
