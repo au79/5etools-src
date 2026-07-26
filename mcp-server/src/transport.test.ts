@@ -6,7 +6,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
 import { PACKAGE_NAME } from './index.js';
-import { SERVER_METADATA_TOOL } from './server.js';
+import { GET_TOOL, SEARCH_TOOL, SERVER_METADATA_TOOL } from './server.js';
 import { getServerMetadata } from './serverMetadata.js';
 
 function isTextContent(value: unknown): value is { readonly text: string; readonly type: 'text' } {
@@ -46,7 +46,7 @@ void describe('MCP stdio transport', () => {
       const tools = await client.listTools();
       assert.deepEqual(
         tools.tools.map((tool) => tool.name),
-        [SERVER_METADATA_TOOL],
+        [SERVER_METADATA_TOOL, SEARCH_TOOL, GET_TOOL],
       );
 
       const result = await client.callTool({ arguments: {}, name: SERVER_METADATA_TOOL });
@@ -55,6 +55,24 @@ void describe('MCP stdio transport', () => {
       const firstContent = getFirstContent(result.content);
       if (!isTextContent(firstContent)) throw new Error('The version tool did not return text content');
       assert.deepEqual(JSON.parse(firstContent.text) as unknown, identity);
+
+      const search = await client.callTool({ arguments: { domain: 'race', query: 'human' }, name: SEARCH_TOOL });
+      const searchContent = getFirstContent(search.content);
+      if (!isTextContent(searchContent)) throw new Error('The search tool did not return text content');
+      assert.ok((JSON.parse(searchContent.text) as readonly unknown[]).length > 0);
+
+      const get = await client.callTool({ arguments: { id: 'race/human/phb' }, name: GET_TOOL });
+      const getContent = getFirstContent(get.content);
+      if (!isTextContent(getContent)) throw new Error('The get tool did not return text content');
+      assert.equal((JSON.parse(getContent.text) as { readonly id?: unknown }).id, 'race/human/phb');
+
+      const missingGet = await client.callTool({ arguments: { id: 'race/not-real/phb' }, name: GET_TOOL });
+      const missingGetContent = getFirstContent(missingGet.content);
+      if (!isTextContent(missingGetContent)) throw new Error('The missing get tool result did not return text content');
+      assert.equal(missingGetContent.text, 'null');
+
+      const invalidGet = await client.callTool({ arguments: { domain: 'race' }, name: GET_TOOL });
+      assert.equal(invalidGet.isError, true);
     } finally {
       await client.close();
     }
