@@ -93,6 +93,16 @@ pnpm codex:tunnel:doctor
 pnpm codex:tunnel:run
 ```
 
+Append `-- --watch` to reconnect after source changes, rebuilds, or client exits. It watches every non-test file in
+`src/` and the built `dist/src/cli.js` entrypoint:
+
+```bash
+pnpm codex:tunnel:run -- --watch
+```
+
+`--watch` does not build the server; run `pnpm run build` after changing source. The resulting entrypoint change causes
+another reconnect that loads the new build.
+
 Run `doctor` **before** `run`: it tests whether the configured local health port is free. Once `run` owns that port,
 re-running `doctor` reports an expected bind conflict rather than a tunnel failure. Leave `run` active while you test
 ChatGPT. The tunnel client should report healthy, ready, and connected. Its loopback admin UI, health, readiness, and

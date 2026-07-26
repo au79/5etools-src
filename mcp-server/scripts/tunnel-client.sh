@@ -32,4 +32,76 @@ if [[ "${1:-}" == "init-5etools" ]]; then
     "$@"
 fi
 
+if [[ "${1:-}" == "run" ]]; then
+	shift
+
+	watch=false
+	run_args=()
+	for arg in "$@"; do
+		if [[ "$arg" == "--watch" ]]; then
+			watch=true
+		else
+			run_args+=("$arg")
+		fi
+	done
+
+	if [[ "$watch" == false ]]; then
+		exec tunnel-client run "${run_args[@]}"
+	fi
+
+	get_watch_fingerprint() {
+		local cli_path="$package_dir/dist/src/cli.js"
+
+		{
+			find "$package_dir/src" -type f ! -name '*.test.*' -exec cksum {} + | LC_ALL=C sort
+			if [[ -f "$cli_path" ]]; then
+				cksum "$cli_path"
+			else
+				printf 'missing %s\n' "$cli_path"
+			fi
+		} | cksum
+	}
+
+	client_pid=
+	stop_client() {
+		if [[ -n "$client_pid" ]]; then
+			kill -TERM "$client_pid" 2>/dev/null || true
+			wait "$client_pid" 2>/dev/null || true
+		fi
+		exit 0
+	}
+
+	trap stop_client INT TERM
+	watch_fingerprint=$(get_watch_fingerprint)
+	while true; do
+		tunnel-client run "${run_args[@]}" &
+		client_pid=$!
+		restarted_for_build=false
+
+		while kill -0 "$client_pid" 2>/dev/null; do
+			sleep 1
+			current_watch_fingerprint=$(get_watch_fingerprint)
+			if [[ "$current_watch_fingerprint" != "$watch_fingerprint" ]]; then
+				printf 'Detected MCP server source or build change; reconnecting tunnel.\n' >&2
+				watch_fingerprint=$current_watch_fingerprint
+				restarted_for_build=true
+				kill -TERM "$client_pid" 2>/dev/null || true
+				break
+			fi
+		done
+
+		if wait "$client_pid"; then
+			status=0
+		else
+			status=$?
+		fi
+		client_pid=
+
+		if [[ "$restarted_for_build" == false ]]; then
+			printf 'Tunnel exited with status %s; reconnecting in 1 second.\n' "$status" >&2
+		fi
+		sleep 1
+	done
+fi
+
 exec tunnel-client "$@"

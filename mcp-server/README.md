@@ -25,6 +25,16 @@ tunnel from this directory with:
 pnpm codex:tunnel:run
 ```
 
+To reconnect after source changes, rebuilds, or client exits, append the wrapper's `--watch` flag. It watches every
+non-test file in `src/` and the built `dist/src/cli.js` entrypoint:
+
+```bash
+pnpm codex:tunnel:run -- --watch
+```
+
+`--watch` does not build the server; run `pnpm run build` after changing source. The resulting entrypoint change causes
+another reconnect that loads the new build.
+
 Then use the plugin in a new ChatGPT conversation. For initial setup, recovery steps, and troubleshooting, follow the
 [OpenAI ChatGPT Secure MCP Tunnel runbook](docs/chatgpt-secure-mcp-tunnel.md). `tunnel-client` is an
 operator-installed tool, not an npm dependency of this package.
