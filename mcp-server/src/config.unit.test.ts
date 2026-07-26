@@ -22,7 +22,6 @@ void describe('Configuration', () => {
       configuration.sourceRoots.map((sourceRoot) => sourceRoot.name),
       ['data'],
     );
-    assert.deepEqual(configuration.validationRollout, ['races', 'classes']);
     assert.equal(configuration.adventure.mode, 'disabled');
     assert.equal(configuration.log.pretty, false);
   });
@@ -34,8 +33,7 @@ void describe('Configuration', () => {
       `// Configuration values are overridden by environment and CLI options.\n{
   "sources": ["homebrew"],
   "adventures": { "mode": "all" },
-  "log": { "level": "debug", "pretty": true },
-  "validationRollout": ["classes"]
+  "log": { "level": "debug", "pretty": true }
 }\n`,
     );
 
@@ -45,7 +43,6 @@ void describe('Configuration', () => {
         MCP_5ETOOLS_LOG_LEVEL: 'warn',
         MCP_5ETOOLS_LOG_PRETTY: 'false',
         MCP_5ETOOLS_SOURCES: 'prerelease',
-        MCP_5ETOOLS_VALIDATION_ROLLOUT: 'races',
       },
     });
 
@@ -55,7 +52,6 @@ void describe('Configuration', () => {
     );
     assert.deepEqual(configuration.adventure, { mode: 'allowlist', sourceIds: ['LMoP'] });
     assert.deepEqual(configuration.log, { level: 'warn', pretty: false });
-    assert.deepEqual(configuration.validationRollout, ['races']);
     assert.deepEqual(configuration.warnings, ['Adventure content is enabled for allowlisted source IDs: LMoP.']);
   });
 
@@ -74,7 +70,6 @@ void describe('Configuration', () => {
       log: { level: 'info', pretty: false },
       projectRoot: normalizedRoot,
       sourceRoots: ['data', 'homebrew'],
-      validationRollout: ['races', 'classes'],
       warnings: [],
     });
   });
@@ -116,8 +111,6 @@ void describe('Configuration', () => {
         '--log-level',
         'error',
         '--log-pretty',
-        '--validation-rollout',
-        'races,classes',
       ],
       environment: {},
     });
@@ -134,12 +127,10 @@ void describe('Configuration', () => {
         MCP_5ETOOLS_ADVENTURE_SOURCES: 'LMoP,CoS',
         MCP_5ETOOLS_LOG_LEVEL: 'debug',
         MCP_5ETOOLS_LOG_PRETTY: 'true',
-        MCP_5ETOOLS_VALIDATION_ROLLOUT: 'classes',
       },
     });
     assert.deepEqual(environmentConfiguration.adventure, { mode: 'allowlist', sourceIds: ['LMoP', 'CoS'] });
     assert.deepEqual(environmentConfiguration.log, { level: 'debug', pretty: true });
-    assert.deepEqual(environmentConfiguration.validationRollout, ['classes']);
 
     assert.equal(
       resolveConfiguration({ argv: ['--root', root, '--no-log-pretty'], environment: {} }).log.pretty,
@@ -157,7 +148,7 @@ void describe('Configuration', () => {
     const root = createFixtureRoot();
     writeFileSync(
       join(root, CONFIG_FILE_NAME),
-      '{ "sources": ["homebrew"], "adventures": { "mode": "all" }, "log": { "level": "debug", "pretty": true }, "validationRollout": ["classes"] }',
+      '{ "sources": ["homebrew"], "adventures": { "mode": "all" }, "log": { "level": "debug", "pretty": true } }',
     );
 
     const configuration = resolveConfiguration({ argv: ['--root', root], environment: {} });
@@ -167,7 +158,6 @@ void describe('Configuration', () => {
     );
     assert.deepEqual(configuration.adventure, { mode: 'all', sourceIds: [] });
     assert.deepEqual(configuration.log, { level: 'debug', pretty: true });
-    assert.deepEqual(configuration.validationRollout, ['classes']);
   });
 
   void test('rejects malformed and contradictory configuration', () => {
@@ -239,13 +229,11 @@ void describe('Configuration', () => {
     throwsConfigurationError(['--adventures', 'unknown']);
     throwsConfigurationError(['--adventure-source', '--log-level', 'info']);
     throwsConfigurationError(['--log-level', 'verbose']);
-    throwsConfigurationError(['--validation-rollout', 'spells']);
     throwsConfigurationError(['--unknown']);
     throwsConfigurationError([], { MCP_5ETOOLS_SOURCES: 'data,' });
     throwsConfigurationError([], { MCP_5ETOOLS_ADVENTURES: 'unknown' });
     throwsConfigurationError([], { MCP_5ETOOLS_LOG_LEVEL: 'verbose' });
     throwsConfigurationError([], { MCP_5ETOOLS_LOG_PRETTY: 'yes' });
-    throwsConfigurationError([], { MCP_5ETOOLS_VALIDATION_ROLLOUT: 'spells' });
 
     throwsConfigurationError(['--config', join(root, 'missing.jsonc')]);
     writeFileSync(join(root, CONFIG_FILE_NAME), '{');

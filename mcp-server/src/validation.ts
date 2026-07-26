@@ -3,21 +3,14 @@ import { join } from 'node:path';
 
 import { z, type ZodType } from 'zod';
 
-import { createPhaseOneManifest, DEFAULT_SOURCE_ROOT } from './manifest.js';
+import { createCatalogManifest, DEFAULT_SOURCE_ROOT } from './manifest.js';
 
-export const PHASE_ONE_COLLECTIONS = [
-  'race',
-  'subrace',
-  'class',
-  'subclass',
-  'classFeature',
-  'subclassFeature',
-] as const;
+export const CATALOG_COLLECTIONS = ['race', 'subrace', 'class', 'subclass', 'classFeature', 'subclassFeature'] as const;
 
-export type PhaseOneCollection = (typeof PHASE_ONE_COLLECTIONS)[number];
+export type CatalogCollection = (typeof CATALOG_COLLECTIONS)[number];
 
 export interface ValidationFailure {
-  readonly collection: PhaseOneCollection;
+  readonly collection: CatalogCollection;
   readonly file: string;
   readonly path: readonly PropertyKey[];
   readonly recordName?: string | undefined;
@@ -88,7 +81,7 @@ const NUMBER_FIELDS = new Set(['page', 'header', 'blindsight', 'darkvision']);
 const ARRAY_FIELDS = new Set(['entries']);
 const OBJECT_FIELDS = new Set(['_copy', 'overwrite']);
 
-const COLLECTION_FIELDS: Readonly<Record<PhaseOneCollection, readonly string[]>> = {
+const COLLECTION_FIELDS: Readonly<Record<CatalogCollection, readonly string[]>> = {
   race: [
     '_copy',
     '_versions',
@@ -275,7 +268,7 @@ const COLLECTION_FIELDS: Readonly<Record<PhaseOneCollection, readonly string[]>>
   ],
 };
 
-function getFieldSchema(collection: PhaseOneCollection, field: string): ZodType<unknown> {
+function getFieldSchema(collection: CatalogCollection, field: string): ZodType<unknown> {
   if (field === 'name') return collection === 'subrace' ? z.string().optional() : z.string();
   if (REQUIRED_STRING_FIELDS.has(field)) return z.string();
   if (field === 'raceName' || field === 'raceSource') return z.string().optional();
@@ -286,7 +279,7 @@ function getFieldSchema(collection: PhaseOneCollection, field: string): ZodType<
   return JSON_VALUE_SCHEMA.optional();
 }
 
-function createRecordSchema(collection: PhaseOneCollection): ZodType<RawRecord> {
+function createRecordSchema(collection: CatalogCollection): ZodType<RawRecord> {
   const shape = Object.fromEntries(
     COLLECTION_FIELDS[collection].map((field) => [field, getFieldSchema(collection, field)]),
   );
@@ -294,8 +287,8 @@ function createRecordSchema(collection: PhaseOneCollection): ZodType<RawRecord> 
 }
 
 const RECORD_SCHEMAS = Object.fromEntries(
-  PHASE_ONE_COLLECTIONS.map((collection) => [collection, createRecordSchema(collection)]),
-) as Readonly<Record<PhaseOneCollection, ZodType<RawRecord>>>;
+  CATALOG_COLLECTIONS.map((collection) => [collection, createRecordSchema(collection)]),
+) as Readonly<Record<CatalogCollection, ZodType<RawRecord>>>;
 
 function getRecordIdentity(value: unknown): {
   readonly name?: string | undefined;
@@ -311,7 +304,7 @@ function getRecordIdentity(value: unknown): {
 
 export function validateCollectionRecords(
   file: string,
-  collection: PhaseOneCollection,
+  collection: CatalogCollection,
   value: unknown,
 ): readonly RawRecord[] {
   const recordsResult = z.array(RECORD_SCHEMAS[collection]).safeParse(value);
@@ -335,8 +328,8 @@ export function validateCollectionRecords(
 export function validateCollectionFile(
   file: string,
   value: unknown,
-  collections: readonly PhaseOneCollection[],
-): Readonly<Record<PhaseOneCollection, readonly RawRecord[] | undefined>> {
+  collections: readonly CatalogCollection[],
+): Readonly<Record<CatalogCollection, readonly RawRecord[] | undefined>> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     throw new ValidationError(
       collections.map((collection) => ({ collection, file, message: 'Expected a JSON object.', path: [] })),
@@ -369,11 +362,11 @@ export function validateCollectionFile(
 
   return Object.fromEntries(
     collections.map((collection) => [collection, validateCollectionRecords(file, collection, fileValue[collection])]),
-  ) as Readonly<Record<PhaseOneCollection, readonly RawRecord[] | undefined>>;
+  ) as Readonly<Record<CatalogCollection, readonly RawRecord[] | undefined>>;
 }
 
-export function validatePhaseOneProjectRoot(projectRoot: string, sourceRoot = DEFAULT_SOURCE_ROOT): ValidationResult {
-  const manifest = createPhaseOneManifest(projectRoot, sourceRoot);
+export function validateCatalogProjectRoot(projectRoot: string, sourceRoot = DEFAULT_SOURCE_ROOT): ValidationResult {
+  const manifest = createCatalogManifest(projectRoot, sourceRoot);
   const files: string[] = [];
 
   for (const file of manifest.files) {

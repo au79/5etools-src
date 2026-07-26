@@ -16,14 +16,14 @@ export const STABLE_DOMAINS = [
   'dm-tool',
 ] as const;
 
-export const PHASE_ONE_DOMAINS = ['race', 'subrace', 'class', 'subclass', 'classFeature', 'subclassFeature'] as const;
+export const CATALOG_DOMAINS = ['race', 'subrace', 'class', 'subclass', 'classFeature', 'subclassFeature'] as const;
 
 export type StableDomain = (typeof STABLE_DOMAINS)[number];
-export type PhaseOneDomain = (typeof PHASE_ONE_DOMAINS)[number];
+export type CatalogDomain = (typeof CATALOG_DOMAINS)[number];
 export type ManifestFileRole = 'catalog' | 'entity' | 'generated-support' | 'presentation';
 
 export interface ManifestCollection {
-  readonly domain?: PhaseOneDomain;
+  readonly domain?: CatalogDomain;
   readonly name: string;
 }
 
@@ -33,15 +33,15 @@ export interface ManifestFile {
   readonly role: ManifestFileRole;
 }
 
-export interface PhaseOneManifest {
-  readonly enabledDomains: readonly PhaseOneDomain[];
+export interface CatalogManifest {
+  readonly enabledDomains: readonly CatalogDomain[];
   readonly files: readonly ManifestFile[];
   readonly stableDomains: readonly StableDomain[];
   readonly version: typeof MANIFEST_VERSION;
 }
 
 export interface ManifestDiagnostics {
-  readonly enabledDomains: readonly PhaseOneDomain[];
+  readonly enabledDomains: readonly CatalogDomain[];
   readonly files: readonly Pick<ManifestFile, 'path' | 'role'>[];
   readonly version: typeof MANIFEST_VERSION;
 }
@@ -53,11 +53,11 @@ export class ManifestError extends Error {
   }
 }
 
-const RACE_COLLECTIONS = new Map<string, PhaseOneDomain>([
+const RACE_COLLECTIONS = new Map<string, CatalogDomain>([
   ['race', 'race'],
   ['subrace', 'subrace'],
 ]);
-const CLASS_COLLECTIONS = new Map<string, PhaseOneDomain>([
+const CLASS_COLLECTIONS = new Map<string, CatalogDomain>([
   ['class', 'class'],
   ['subclass', 'subclass'],
   ['classFeature', 'classFeature'],
@@ -86,7 +86,7 @@ function readObject(path: string): Record<string, unknown> {
 function classifyEntityFile(
   projectRoot: string,
   path: string,
-  collectionDomains: ReadonlyMap<string, PhaseOneDomain>,
+  collectionDomains: ReadonlyMap<string, CatalogDomain>,
 ): ManifestFile {
   const value = readObject(path);
   const collections: ManifestCollection[] = [];
@@ -113,7 +113,7 @@ function requireFile(path: string, label: string): void {
 
 function requireDomains(
   files: readonly ManifestFile[],
-  requiredDomains: readonly PhaseOneDomain[],
+  requiredDomains: readonly CatalogDomain[],
   label: string,
 ): void {
   const presentDomains = new Set(
@@ -134,7 +134,7 @@ function classifyClassCompanion(projectRoot: string, path: string, fileName: str
   return { collections: [], path: toManifestPath(projectRoot, path), role: 'presentation' };
 }
 
-export function createPhaseOneManifest(projectRoot: string, sourceRoot = DEFAULT_SOURCE_ROOT): PhaseOneManifest {
+export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_SOURCE_ROOT): CatalogManifest {
   const sourcePath = join(projectRoot, sourceRoot);
   const racesPath = join(sourcePath, 'races.json');
   const classDirectory = join(sourcePath, 'class');
@@ -164,17 +164,17 @@ export function createPhaseOneManifest(projectRoot: string, sourceRoot = DEFAULT
   }
 
   if (classEntityFiles.length === 0) throw new ManifestError(`No class entity files found in ${classDirectory}.`);
-  requireDomains(classEntityFiles, PHASE_ONE_DOMAINS.slice(2), 'class');
+  requireDomains(classEntityFiles, CATALOG_DOMAINS.slice(2), 'class');
 
   return {
-    enabledDomains: PHASE_ONE_DOMAINS,
+    enabledDomains: CATALOG_DOMAINS,
     files,
     stableDomains: STABLE_DOMAINS,
     version: MANIFEST_VERSION,
   };
 }
 
-export function getManifestDiagnostics(manifest: PhaseOneManifest): ManifestDiagnostics {
+export function getManifestDiagnostics(manifest: CatalogManifest): ManifestDiagnostics {
   return {
     enabledDomains: manifest.enabledDomains,
     files: manifest.files.map(({ path, role }) => ({ path, role })),

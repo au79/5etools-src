@@ -3,9 +3,9 @@ import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import {
+  validateCatalogProjectRoot,
   validateCollectionFile,
   validateCollectionRecords,
-  validatePhaseOneProjectRoot,
   ValidationError,
 } from './validation.js';
 
@@ -102,7 +102,7 @@ void describe('Phase 1 validation', () => {
 
   void test('validates the full Phase 1 rollout in the live checkout', () => {
     const projectRoot = fileURLToPath(new URL('../../..', import.meta.url));
-    const result = validatePhaseOneProjectRoot(projectRoot);
+    const result = validateCatalogProjectRoot(projectRoot);
 
     assert.ok(result.files.includes('data/races.json'));
     assert.ok(result.files.some((file) => file.startsWith('data/class/class-')));

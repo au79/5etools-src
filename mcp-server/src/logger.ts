@@ -35,7 +35,6 @@ export function getConfigurationLogFields(configuration: EffectiveConfiguration)
     logLevel: configuration.log.level,
     logPretty: configuration.log.pretty,
     sourceRoots: configuration.sourceRoots.map((sourceRoot) => sourceRoot.name),
-    validationRollout: configuration.validationRollout,
     warningCount: configuration.warnings.length,
   };
 }

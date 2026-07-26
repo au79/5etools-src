@@ -10,12 +10,10 @@ export const CONFIG_FILE_NAME = '.5etools-mcp.jsonc';
 const SourceRootSchema = z.enum(['data', 'prerelease', 'homebrew']);
 const AdventureModeSchema = z.enum(['disabled', 'allowlist', 'all']);
 const LogLevelSchema = z.enum(['trace', 'debug', 'info', 'warn', 'error']);
-const ValidationCollectionSchema = z.enum(['races', 'classes']);
 
 export type SourceRoot = z.infer<typeof SourceRootSchema>;
 export type AdventureMode = z.infer<typeof AdventureModeSchema>;
 export type LogLevel = z.infer<typeof LogLevelSchema>;
-export type ValidationCollection = z.infer<typeof ValidationCollectionSchema>;
 
 export const ConfigFileSchema = z.strictObject({
   root: z.string().min(1).optional(),
@@ -28,7 +26,6 @@ export const ConfigFileSchema = z.strictObject({
     ])
     .optional(),
   log: z.strictObject({ level: LogLevelSchema.optional(), pretty: z.boolean().optional() }).optional(),
-  validationRollout: z.array(ValidationCollectionSchema).min(1).optional(),
 });
 
 type ConfigFile = z.infer<typeof ConfigFileSchema>;
@@ -41,7 +38,6 @@ interface CliConfiguration {
   logPretty?: boolean | undefined;
   root?: string | undefined;
   sources?: readonly SourceRoot[] | undefined;
-  validationRollout?: readonly ValidationCollection[] | undefined;
 }
 
 type EnvironmentConfiguration = CliConfiguration;
@@ -63,7 +59,6 @@ export interface EffectiveConfiguration {
   };
   readonly projectRoot: string;
   readonly sourceRoots: readonly EnabledSourceRoot[];
-  readonly validationRollout: readonly ValidationCollection[];
   readonly warnings: readonly string[];
 }
 
@@ -73,7 +68,6 @@ export interface ConfigurationDiagnostics {
   readonly log: EffectiveConfiguration['log'];
   readonly projectRoot: string;
   readonly sourceRoots: readonly SourceRoot[];
-  readonly validationRollout: readonly ValidationCollection[];
   readonly warnings: readonly string[];
 }
 
@@ -92,7 +86,6 @@ export class ConfigurationError extends Error {
 }
 
 const DEFAULT_SOURCES: readonly SourceRoot[] = ['data'];
-const DEFAULT_VALIDATION_ROLLOUT: readonly ValidationCollection[] = ['races', 'classes'];
 
 function getDefaultProjectRoot(): string {
   const packageRoot = fileURLToPath(new URL('../..', import.meta.url));
@@ -137,7 +130,6 @@ function parseCliConfiguration(argv: readonly string[]): CliConfiguration {
   let logPretty: boolean | undefined;
   let root: string | undefined;
   let sources: readonly SourceRoot[] | undefined;
-  let validationRollout: readonly ValidationCollection[] | undefined;
 
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
@@ -169,9 +161,6 @@ function parseCliConfiguration(argv: readonly string[]): CliConfiguration {
       logPretty = true;
     } else if (argument === '--no-log-pretty') {
       logPretty = false;
-    } else if (argument === '--validation-rollout') {
-      validationRollout = parseEnumList(readOptionValue(argv, index, argument), argument, ValidationCollectionSchema);
-      index += 1;
     } else {
       throw new ConfigurationError(`Unknown configuration option ${JSON.stringify(argument)}.`);
     }
@@ -185,7 +174,6 @@ function parseCliConfiguration(argv: readonly string[]): CliConfiguration {
     logPretty,
     root,
     sources,
-    validationRollout,
   };
 }
 
@@ -215,13 +203,6 @@ function parseEnvironmentConfiguration(environment: NodeJS.ProcessEnv): Environm
   }
   if (environment.MCP_5ETOOLS_LOG_PRETTY !== undefined) {
     result.logPretty = parseBoolean(environment.MCP_5ETOOLS_LOG_PRETTY, 'MCP_5ETOOLS_LOG_PRETTY');
-  }
-  if (environment.MCP_5ETOOLS_VALIDATION_ROLLOUT !== undefined) {
-    result.validationRollout = parseEnumList(
-      environment.MCP_5ETOOLS_VALIDATION_ROLLOUT,
-      'MCP_5ETOOLS_VALIDATION_ROLLOUT',
-      ValidationCollectionSchema,
-    );
   }
   return result;
 }
@@ -343,13 +324,6 @@ export function resolveConfiguration(options: ResolveConfigurationOptions = {}):
     throw new ConfigurationError('Adventure source IDs are only valid when adventure mode is allowlist.');
   }
 
-  const validationRollout = unique(
-    cli.validationRollout ??
-      environmentConfig.validationRollout ??
-      config.validationRollout ??
-      DEFAULT_VALIDATION_ROLLOUT,
-    'Validation rollout',
-  );
   const warnings: string[] = [];
   if (adventureMode === 'all') warnings.push('Adventure content is enabled for all adventure source IDs.');
   if (adventureMode === 'allowlist') {
@@ -365,7 +339,6 @@ export function resolveConfiguration(options: ResolveConfigurationOptions = {}):
     },
     projectRoot,
     sourceRoots,
-    validationRollout,
     warnings,
   };
 }
@@ -377,7 +350,6 @@ export function getConfigurationDiagnostics(configuration: EffectiveConfiguratio
     log: configuration.log,
     projectRoot: configuration.projectRoot,
     sourceRoots: configuration.sourceRoots.map((sourceRoot) => sourceRoot.name),
-    validationRollout: configuration.validationRollout,
     warnings: configuration.warnings,
   };
 }

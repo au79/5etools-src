@@ -2,12 +2,12 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import type { PhaseOneCatalog } from './catalog.js';
-import { createPhaseOneCatalog } from './catalog.js';
+import type { Catalog } from './catalog.js';
+import { createCatalog } from './catalog.js';
 import { getCatalogRecord, QueryError, searchCatalog } from './query.js';
 
 function getCatalog() {
-  return createPhaseOneCatalog(fileURLToPath(new URL('../../..', import.meta.url)));
+  return createCatalog(fileURLToPath(new URL('../../..', import.meta.url)));
 }
 
 void describe('Catalog queries', () => {
@@ -73,7 +73,7 @@ void describe('Catalog queries', () => {
           sourceRoot: 'data',
         },
       ],
-    } as unknown as PhaseOneCatalog;
+    } as unknown as Catalog;
 
     assert.deepEqual(
       searchCatalog(catalog, { query: 'human' }).map((record) => record.data.name),

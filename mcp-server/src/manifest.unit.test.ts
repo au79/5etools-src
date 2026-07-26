@@ -6,11 +6,11 @@ import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import {
-  createPhaseOneManifest,
+  CATALOG_DOMAINS,
+  createCatalogManifest,
   getManifestDiagnostics,
   MANIFEST_VERSION,
   ManifestError,
-  PHASE_ONE_DOMAINS,
 } from './manifest.js';
 
 function createFixtureRoot(): string {
@@ -28,10 +28,10 @@ function createFixtureRoot(): string {
 void describe('Phase 1 manifest', () => {
   void test('classifies the current Phase 1 source files', () => {
     const projectRoot = fileURLToPath(new URL('../../..', import.meta.url));
-    const manifest = createPhaseOneManifest(projectRoot);
+    const manifest = createCatalogManifest(projectRoot);
 
     assert.equal(manifest.version, MANIFEST_VERSION);
-    assert.deepEqual(manifest.enabledDomains, PHASE_ONE_DOMAINS);
+    assert.deepEqual(manifest.enabledDomains, CATALOG_DOMAINS);
     assert.ok(manifest.files.some((file) => file.path === 'data/races.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/class/index.json' && file.role === 'catalog'));
   });
@@ -40,29 +40,29 @@ void describe('Phase 1 manifest', () => {
     const root = createFixtureRoot();
     writeFileSync(join(root, 'data', 'class', 'class-new.json'), '{ "class": [] }');
 
-    const manifest = createPhaseOneManifest(root);
+    const manifest = createCatalogManifest(root);
     assert.ok(manifest.files.some((file) => file.path === 'data/class/class-new.json' && file.role === 'entity'));
-    assert.deepEqual(getManifestDiagnostics(manifest).enabledDomains, PHASE_ONE_DOMAINS);
+    assert.deepEqual(getManifestDiagnostics(manifest).enabledDomains, CATALOG_DOMAINS);
   });
 
   void test('rejects missing and unclassified required source collections', () => {
     const missingCollectionRoot = createFixtureRoot();
     writeFileSync(join(missingCollectionRoot, 'data', 'races.json'), '{ "race": [] }');
     assert.throws(
-      () => createPhaseOneManifest(missingCollectionRoot),
+      () => createCatalogManifest(missingCollectionRoot),
       (error: unknown) => error instanceof ManifestError && error.message.includes('subrace'),
     );
 
     const unknownCollectionRoot = createFixtureRoot();
     writeFileSync(join(unknownCollectionRoot, 'data', 'class', 'class-fixture.json'), '{ "class": [], "unknown": [] }');
     assert.throws(
-      () => createPhaseOneManifest(unknownCollectionRoot),
+      () => createCatalogManifest(unknownCollectionRoot),
       (error: unknown) => error instanceof ManifestError && error.message.includes('Unclassified'),
     );
 
     const missingFileRoot = mkdtempSync(join(tmpdir(), '5etools-mcp-manifest-missing-'));
     assert.throws(
-      () => createPhaseOneManifest(missingFileRoot),
+      () => createCatalogManifest(missingFileRoot),
       (error: unknown) => error instanceof ManifestError && error.message.includes('race source file'),
     );
 
@@ -70,21 +70,21 @@ void describe('Phase 1 manifest', () => {
     mkdirSync(join(missingClassDirectoryRoot, 'data'));
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'races.json'), '{ "race": [], "subrace": [] }');
     assert.throws(
-      () => createPhaseOneManifest(missingClassDirectoryRoot),
+      () => createCatalogManifest(missingClassDirectoryRoot),
       (error: unknown) => error instanceof ManifestError && error.message.includes('class source directory'),
     );
 
     const noClassEntityRoot = createFixtureRoot();
     writeFileSync(join(noClassEntityRoot, 'data', 'class', 'class-fixture.json'), '{}');
     assert.throws(
-      () => createPhaseOneManifest(noClassEntityRoot),
+      () => createCatalogManifest(noClassEntityRoot),
       (error: unknown) => error instanceof ManifestError && error.message.includes('class collection'),
     );
 
     const noClassFileRoot = createFixtureRoot();
     rmSync(join(noClassFileRoot, 'data', 'class', 'class-fixture.json'));
     assert.throws(
-      () => createPhaseOneManifest(noClassFileRoot),
+      () => createCatalogManifest(noClassFileRoot),
       (error: unknown) => error instanceof ManifestError && error.message.includes('No class entity files'),
     );
   });
@@ -93,14 +93,14 @@ void describe('Phase 1 manifest', () => {
     const nonObjectRoot = createFixtureRoot();
     writeFileSync(join(nonObjectRoot, 'data', 'races.json'), '[]');
     assert.throws(
-      () => createPhaseOneManifest(nonObjectRoot),
+      () => createCatalogManifest(nonObjectRoot),
       (error: unknown) => error instanceof ManifestError && error.message.includes('JSON object'),
     );
 
     const malformedRoot = createFixtureRoot();
     writeFileSync(join(malformedRoot, 'data', 'races.json'), '{');
     assert.throws(
-      () => createPhaseOneManifest(malformedRoot),
+      () => createCatalogManifest(malformedRoot),
       (error: unknown) => error instanceof ManifestError && error.message.includes('Unable to read JSON file'),
     );
   });

@@ -1,5 +1,5 @@
 import { type EffectiveConfiguration, resolveConfiguration, type ResolveConfigurationOptions } from './config.js';
-import { validatePhaseOneProjectRoot, type ValidationResult } from './validation.js';
+import { validateCatalogProjectRoot, type ValidationResult } from './validation.js';
 
 export interface ValidationCommandResult {
   readonly configuration: EffectiveConfiguration;
@@ -9,7 +9,7 @@ export interface ValidationCommandResult {
 export function runValidationCommand(options: ResolveConfigurationOptions = {}): ValidationCommandResult {
   const configuration = resolveConfiguration(options);
   const results = configuration.sourceRoots.map((sourceRoot) =>
-    validatePhaseOneProjectRoot(configuration.projectRoot, sourceRoot.name),
+    validateCatalogProjectRoot(configuration.projectRoot, sourceRoot.name),
   );
 
   return { configuration, results };

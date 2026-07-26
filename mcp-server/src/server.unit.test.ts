@@ -6,8 +6,8 @@ import { fileURLToPath } from 'node:url';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 
-import type { PhaseOneCatalog } from './catalog.js';
-import { createPhaseOneCatalog } from './catalog.js';
+import type { Catalog } from './catalog.js';
+import { createCatalog } from './catalog.js';
 import { createLogger } from './logger.js';
 import { QueryError } from './query.js';
 import {
@@ -66,7 +66,7 @@ void describe('MCP server', () => {
 
   void test('uses an injected catalog or resolves the selected project root', () => {
     const projectRoot = fileURLToPath(new URL('../../..', import.meta.url));
-    const catalog = createPhaseOneCatalog(projectRoot);
+    const catalog = createCatalog(projectRoot);
 
     assert.equal(resolveServerCatalog({ catalog }), catalog);
     assert.ok(resolveServerCatalog({ projectRoot }).records.length > 2_000);
@@ -99,7 +99,7 @@ void describe('MCP server', () => {
           sourceRoot: 'data',
         },
       ],
-    } as unknown as PhaseOneCatalog;
+    } as unknown as Catalog;
     const logger = { error: () => undefined, info: () => undefined } as unknown as ReturnType<typeof createLogger>;
     const server = createMcpServer(identity, catalog, logger);
     const client = new Client({ name: 'server-unit-test-client', version: '0.1.0' }, { capabilities: {} });

@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { CatalogError, createPhaseOneCatalog, createRecordId, getCatalogDiagnostics } from './catalog.js';
+import { CatalogError, createCatalog, createRecordId, getCatalogDiagnostics } from './catalog.js';
 
 function createFixtureRoot(): string {
   const root = mkdtempSync(join(tmpdir(), '5etools-mcp-catalog-'));
@@ -32,7 +32,7 @@ function createAlternateSourceRoot(root: string, name: string): void {
 void describe('Phase 1 catalog', () => {
   void test('keeps validated records intact and attaches provenance', () => {
     const projectRoot = fileURLToPath(new URL('../../..', import.meta.url));
-    const catalog = createPhaseOneCatalog(projectRoot);
+    const catalog = createCatalog(projectRoot);
     const human = catalog.records.find(
       (record) => record.domain === 'race' && record.data.name === 'Human' && record.source === 'PHB',
     );
@@ -100,7 +100,7 @@ void describe('Phase 1 catalog', () => {
     );
 
     assert.throws(
-      () => createPhaseOneCatalog(root),
+      () => createCatalog(root),
       (error: unknown) => error instanceof CatalogError && error.message.includes('Duplicate catalog ID'),
     );
   });
@@ -119,7 +119,7 @@ void describe('Phase 1 catalog', () => {
 
     assert.throws(
       () =>
-        createPhaseOneCatalog(root, [
+        createCatalog(root, [
           { name: 'data', path: join(root, 'data') },
           { name: 'homebrew', path: join(root, 'homebrew') },
         ]),
@@ -138,7 +138,7 @@ void describe('Phase 1 catalog', () => {
       '{ "race": [{ "name": "Elf", "source": "HB" }], "subrace": [] }',
     );
 
-    const catalog = createPhaseOneCatalog(root, [
+    const catalog = createCatalog(root, [
       { name: 'data', path: join(root, 'data') },
       { name: 'homebrew', path: join(root, 'homebrew') },
     ]);
@@ -152,14 +152,14 @@ void describe('Phase 1 catalog', () => {
 
   void test('requires at least one source root', () => {
     assert.throws(
-      () => createPhaseOneCatalog(createFixtureRoot(), []),
+      () => createCatalog(createFixtureRoot(), []),
       (error: unknown) => error instanceof CatalogError && error.message.includes('At least one source root'),
     );
   });
 
   void test('reports a snapshot suitable for diagnostics', () => {
     const projectRoot = fileURLToPath(new URL('../../..', import.meta.url));
-    const diagnostics = getCatalogDiagnostics(createPhaseOneCatalog(projectRoot));
+    const diagnostics = getCatalogDiagnostics(createCatalog(projectRoot));
 
     assert.ok(diagnostics.fileCount > 1);
     assert.ok(diagnostics.recordCount > 2_000);

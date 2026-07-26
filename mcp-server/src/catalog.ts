@@ -1,14 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { createPhaseOneManifest, DEFAULT_SOURCE_ROOT, type PhaseOneManifest } from './manifest.js';
-import { type PhaseOneCollection, validateCollectionFile } from './validation.js';
+import { type CatalogManifest, createCatalogManifest, DEFAULT_SOURCE_ROOT } from './manifest.js';
+import { type CatalogCollection, validateCollectionFile } from './validation.js';
 
 type RawRecord = Readonly<Record<string, unknown>>;
 
 export interface CatalogRecord {
   readonly data: RawRecord;
-  readonly domain: PhaseOneCollection;
+  readonly domain: CatalogCollection;
   readonly edition?: string | undefined;
   readonly file: string;
   readonly id: string;
@@ -17,8 +17,8 @@ export interface CatalogRecord {
   readonly sourceRoot: string;
 }
 
-export interface PhaseOneCatalog {
-  readonly manifest: PhaseOneManifest;
+export interface Catalog {
+  readonly manifest: CatalogManifest;
   readonly records: readonly CatalogRecord[];
 }
 
@@ -66,7 +66,7 @@ function requireIdentityPart(record: RawRecord, field: string): string {
   return value;
 }
 
-export function createRecordId(domain: PhaseOneCollection, record: RawRecord): string {
+export function createRecordId(domain: CatalogCollection, record: RawRecord): string {
   const source = requireIdentityPart(record, 'source');
   const name = getString(record, 'name');
   let parts: readonly string[];
@@ -121,7 +121,7 @@ export function createRecordId(domain: PhaseOneCollection, record: RawRecord): s
   return parts.map(idPart).join('/');
 }
 
-function createCatalogRecord(domain: PhaseOneCollection, file: string, record: RawRecord): CatalogRecord {
+function createCatalogRecord(domain: CatalogCollection, file: string, record: RawRecord): CatalogRecord {
   return {
     data: record,
     domain,
@@ -134,20 +134,20 @@ function createCatalogRecord(domain: PhaseOneCollection, file: string, record: R
   };
 }
 
-export function createPhaseOneCatalog(
+export function createCatalog(
   projectRoot: string,
   sourceRoots: readonly CatalogSourceRoot[] = [
     { name: DEFAULT_SOURCE_ROOT, path: join(projectRoot, DEFAULT_SOURCE_ROOT) },
   ],
-): PhaseOneCatalog {
+): Catalog {
   if (sourceRoots.length === 0) throw new CatalogError('At least one source root must be enabled.');
 
   const records: CatalogRecord[] = [];
   const recordsById = new Map<string, CatalogRecord>();
-  const manifests: PhaseOneManifest[] = [];
+  const manifests: CatalogManifest[] = [];
 
   for (const sourceRoot of sourceRoots) {
-    const manifest = createPhaseOneManifest(projectRoot, sourceRoot.name);
+    const manifest = createCatalogManifest(projectRoot, sourceRoot.name);
     manifests.push(manifest);
 
     for (const file of manifest.files) {
@@ -183,7 +183,7 @@ export function createPhaseOneCatalog(
   };
 }
 
-export function getCatalogDiagnostics(catalog: PhaseOneCatalog): CatalogDiagnostics {
+export function getCatalogDiagnostics(catalog: Catalog): CatalogDiagnostics {
   return {
     fileCount: catalog.manifest.files.filter((file) => file.role === 'entity').length,
     recordCount: catalog.records.length,

@@ -89,13 +89,12 @@ project root, then safe defaults. The default project root is the enclosing chec
 `data`.
 
 ```bash
-pnpm start -- --root /path/to/5etools-src --sources data,homebrew --log-pretty
+pnpm start --root /path/to/5etools-src --sources data,homebrew --log-pretty
 ```
 
 The corresponding environment variables are `MCP_5ETOOLS_ROOT`, `MCP_5ETOOLS_CONFIG`, `MCP_5ETOOLS_SOURCES`,
-`MCP_5ETOOLS_LOG_LEVEL`, and `MCP_5ETOOLS_LOG_PRETTY`. The config file also supports `adventures` and
-`validationRollout`; those controls are retained for the broader rollout, but the current public surface remains the
-read-only Phase 1 races/classes catalog.
+`MCP_5ETOOLS_LOG_LEVEL`, and `MCP_5ETOOLS_LOG_PRETTY`. The config file also supports `adventures`. The current public
+surface remains the read-only races/classes catalog.
 
 ## Validate data
 
@@ -108,7 +107,7 @@ pnpm run validate:data
 Pass the same CLI options after `--`, for example:
 
 ```bash
-pnpm run validate:data -- --sources data,homebrew
+pnpm run validate:data --sources data,homebrew
 ```
 
 On success, the command prints a concise file/source-root summary and exits zero. Configuration, discovery, or schema

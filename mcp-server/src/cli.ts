@@ -1,8 +1,8 @@
-import { createPhaseOneCatalog } from './catalog.js';
+import { createCatalog } from './catalog.js';
 import { resolveConfiguration } from './config.js';
 import { createLogger, getConfigurationLogFields, observeAction } from './logger.js';
 import { startStdioServer } from './server.js';
-import { validatePhaseOneProjectRoot } from './validation.js';
+import { validateCatalogProjectRoot } from './validation.js';
 
 let logger = createLogger();
 
@@ -19,14 +19,14 @@ async function main(): Promise<void> {
     fields: { sourceRoots: configuration.sourceRoots.map((sourceRoot) => sourceRoot.name) },
     action: () =>
       configuration.sourceRoots.map((sourceRoot) =>
-        validatePhaseOneProjectRoot(configuration.projectRoot, sourceRoot.name),
+        validateCatalogProjectRoot(configuration.projectRoot, sourceRoot.name),
       ),
   });
   const catalog = observeAction(logger, {
     complete: (result) => ({ recordCount: result.records.length }),
     event: 'catalog.build',
     fields: { sourceRoots: configuration.sourceRoots.map((sourceRoot) => sourceRoot.name) },
-    action: () => createPhaseOneCatalog(configuration.projectRoot, configuration.sourceRoots),
+    action: () => createCatalog(configuration.projectRoot, configuration.sourceRoots),
   });
   await startStdioServer({
     catalog,

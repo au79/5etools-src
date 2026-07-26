@@ -3,7 +3,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import type { Logger } from 'pino';
 import { z } from 'zod';
 
-import { createPhaseOneCatalog, type PhaseOneCatalog } from './catalog.js';
+import { type Catalog, createCatalog } from './catalog.js';
 import { createLogger, observeAction } from './logger.js';
 import { getCatalogRecord, QueryError, searchCatalog } from './query.js';
 import { getServerMetadata, type ServerMetadata } from './serverMetadata.js';
@@ -13,7 +13,7 @@ export const SEARCH_TOOL = 'search';
 export const GET_TOOL = 'get';
 
 export interface StartStdioServerOptions {
-  readonly catalog?: PhaseOneCatalog;
+  readonly catalog?: Catalog;
   readonly logger?: Logger;
   readonly projectRoot?: string;
 }
@@ -30,8 +30,8 @@ export function resolveServerLogger(options: StartStdioServerOptions): Logger {
   return options.logger ?? createLogger();
 }
 
-export function resolveServerCatalog(options: StartStdioServerOptions): PhaseOneCatalog {
-  return options.catalog ?? createPhaseOneCatalog(options.projectRoot ?? process.cwd());
+export function resolveServerCatalog(options: StartStdioServerOptions): Catalog {
+  return options.catalog ?? createCatalog(options.projectRoot ?? process.cwd());
 }
 
 export function addShutdownLogging(transport: CloseableTransport, logger: Logger, input: EndAwareInput): void {
@@ -65,7 +65,7 @@ export function getToolErrorResponse(error: unknown): {
 
 export function createMcpServer(
   identity: ServerMetadata,
-  catalog?: PhaseOneCatalog,
+  catalog?: Catalog,
   logger: Logger = createLogger(),
 ): McpServer {
   const server = new McpServer({ name: identity.name, version: identity.version, description: identity.description });

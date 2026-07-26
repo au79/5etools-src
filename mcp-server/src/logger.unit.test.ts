@@ -110,7 +110,6 @@ void describe('Logger', () => {
       log: { level: 'info', pretty: false },
       projectRoot: '/private/project',
       sourceRoots: [{ name: 'data', path: '/private/project/data' }],
-      validationRollout: ['races', 'classes'],
       warnings: ['one warning'],
     });
 
@@ -120,7 +119,6 @@ void describe('Logger', () => {
       logLevel: 'info',
       logPretty: false,
       sourceRoots: ['data'],
-      validationRollout: ['races', 'classes'],
       warningCount: 1,
     });
     assert.equal(JSON.stringify(fields).includes('/private'), false);
@@ -130,7 +128,6 @@ void describe('Logger', () => {
         log: { level: 'info', pretty: false },
         projectRoot: '/private/project',
         sourceRoots: [{ name: 'data', path: '/private/project/data' }],
-        validationRollout: ['races'],
         warnings: [],
       }).configFileConfigured,
       false,

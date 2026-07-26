@@ -1,11 +1,11 @@
-import { type CatalogRecord, type PhaseOneCatalog } from './catalog.js';
-import { type PhaseOneCollection } from './validation.js';
+import { type Catalog, type CatalogRecord } from './catalog.js';
+import { type CatalogCollection } from './validation.js';
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
 
 export interface SearchCatalogOptions {
-  readonly domain?: PhaseOneCollection | undefined;
+  readonly domain?: CatalogCollection | undefined;
   readonly limit?: number | undefined;
   readonly query: string;
   readonly source?: string | undefined;
@@ -13,7 +13,7 @@ export interface SearchCatalogOptions {
 }
 
 export interface GetCatalogOptions {
-  readonly domain?: PhaseOneCollection | undefined;
+  readonly domain?: CatalogCollection | undefined;
   readonly id?: string | undefined;
   readonly name?: string | undefined;
   readonly source?: string | undefined;
@@ -21,7 +21,7 @@ export interface GetCatalogOptions {
 }
 
 export interface QueryCandidate {
-  readonly domain: PhaseOneCollection;
+  readonly domain: CatalogCollection;
   readonly id: string;
   readonly source: string;
   readonly sourceRoot: string;
@@ -86,7 +86,7 @@ function orderSearchResults(records: readonly CatalogRecord[], query: string): C
   );
 }
 
-export function searchCatalog(catalog: PhaseOneCatalog, options: SearchCatalogOptions): readonly CatalogRecord[] {
+export function searchCatalog(catalog: Catalog, options: SearchCatalogOptions): readonly CatalogRecord[] {
   const query = requireQuery(options.query);
   const limit = getLimit(options.limit);
 
@@ -102,7 +102,7 @@ export function searchCatalog(catalog: PhaseOneCatalog, options: SearchCatalogOp
   ).slice(0, limit);
 }
 
-export function getCatalogRecord(catalog: PhaseOneCatalog, options: GetCatalogOptions): CatalogRecord | undefined {
+export function getCatalogRecord(catalog: Catalog, options: GetCatalogOptions): CatalogRecord | undefined {
   if (options.id !== undefined) return catalog.records.find((record) => record.id === options.id);
   if (options.domain === undefined || options.name === undefined) {
     throw new QueryError('Provide an ID or both domain and name for exact retrieval.');
