@@ -64,8 +64,8 @@ void describe('Validation command', () => {
     const result = runValidationCommand({ defaultProjectRoot: root, environment: {}, workingDirectory: root });
 
     assert.equal(result.results.length, 1);
-    assert.equal(result.results[0]?.files.length, 11);
-    assert.equal(formatValidationSummary(result), 'Validation succeeded: 11 files across data.');
+    assert.equal(result.results[0]?.files.length, 12);
+    assert.equal(formatValidationSummary(result), 'Validation succeeded: 12 files across data.');
   });
 
   void test('uses the same source precedence as server startup', () => {

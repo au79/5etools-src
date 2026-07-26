@@ -48,7 +48,7 @@ void describe('Validation CLI', () => {
     const valid = runValidationCli(root);
 
     assert.equal(valid.status, 0);
-    assert.match(valid.stdout, /Validation succeeded: 11 files across data\./);
+    assert.match(valid.stdout, /Validation succeeded: 12 files across data\./);
     assert.equal(valid.stderr, '');
 
     writeFileSync(
