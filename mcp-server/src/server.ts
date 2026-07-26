@@ -89,10 +89,23 @@ export function createMcpServer(
       SEARCH_TOOL,
       {
         title: 'Search 5etools data',
-        description: 'Search raw tagged Phase 1 records. Results retain source labels and file provenance.',
+        description: 'Search raw tagged catalog records. Results retain source labels and file provenance.',
         inputSchema: {
           query: z.string().min(1).max(200),
-          domain: z.enum(['race', 'subrace', 'class', 'subclass', 'classFeature', 'subclassFeature']).optional(),
+          domain: z
+            .enum([
+              'race',
+              'subrace',
+              'background',
+              'feat',
+              'optionalfeature',
+              'facility',
+              'class',
+              'subclass',
+              'classFeature',
+              'subclassFeature',
+            ])
+            .optional(),
           source: z.string().optional(),
           sourceRoot: z.string().optional(),
           limit: z.number().int().min(1).max(100).optional(),
@@ -129,7 +142,20 @@ export function createMcpServer(
           'Get one raw tagged record by stable ID or exact domain/name/source. Ambiguous requests return safe candidates.',
         inputSchema: {
           id: z.string().optional(),
-          domain: z.enum(['race', 'subrace', 'class', 'subclass', 'classFeature', 'subclassFeature']).optional(),
+          domain: z
+            .enum([
+              'race',
+              'subrace',
+              'background',
+              'feat',
+              'optionalfeature',
+              'facility',
+              'class',
+              'subclass',
+              'classFeature',
+              'subclassFeature',
+            ])
+            .optional(),
           name: z.string().optional(),
           source: z.string().optional(),
           sourceRoot: z.string().optional(),

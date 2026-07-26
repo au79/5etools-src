@@ -61,6 +61,34 @@ void describe('MCP stdio transport', () => {
       if (!isTextContent(searchContent)) throw new Error('The search tool did not return text content');
       assert.ok((JSON.parse(searchContent.text) as readonly unknown[]).length > 0);
 
+      const backgroundSearch = await client.callTool({
+        arguments: { domain: 'background', query: 'acolyte' },
+        name: SEARCH_TOOL,
+      });
+      const backgroundContent = getFirstContent(backgroundSearch.content);
+      if (!isTextContent(backgroundContent)) throw new Error('The background search tool did not return text content');
+      assert.equal(
+        (JSON.parse(backgroundContent.text) as readonly { readonly id?: unknown }[])[0]?.id,
+        'background/acolyte/phb',
+      );
+
+      const optionalFeatureSearch = await client.callTool({
+        arguments: { domain: 'optionalfeature', query: 'agonizing blast' },
+        name: SEARCH_TOOL,
+      });
+      const optionalFeatureContent = getFirstContent(optionalFeatureSearch.content);
+      if (!isTextContent(optionalFeatureContent))
+        throw new Error('The optional feature search tool did not return text content');
+      assert.equal(
+        (JSON.parse(optionalFeatureContent.text) as readonly { readonly id?: unknown }[])[0]?.id,
+        'optionalfeature/agonizing%20blast/phb',
+      );
+
+      const facility = await client.callTool({ arguments: { id: 'facility/ancient%20altar/rhw' }, name: GET_TOOL });
+      const facilityContent = getFirstContent(facility.content);
+      if (!isTextContent(facilityContent)) throw new Error('The facility get tool did not return text content');
+      assert.equal((JSON.parse(facilityContent.text) as { readonly id?: unknown }).id, 'facility/ancient%20altar/rhw');
+
       const get = await client.callTool({ arguments: { id: 'race/human/phb' }, name: GET_TOOL });
       const getContent = getFirstContent(get.content);
       if (!isTextContent(getContent)) throw new Error('The get tool did not return text content');

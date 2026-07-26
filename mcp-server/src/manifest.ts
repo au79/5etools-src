@@ -16,7 +16,18 @@ export const STABLE_DOMAINS = [
   'dm-tool',
 ] as const;
 
-export const CATALOG_DOMAINS = ['race', 'subrace', 'class', 'subclass', 'classFeature', 'subclassFeature'] as const;
+export const CATALOG_DOMAINS = [
+  'race',
+  'subrace',
+  'background',
+  'feat',
+  'optionalfeature',
+  'facility',
+  'class',
+  'subclass',
+  'classFeature',
+  'subclassFeature',
+] as const;
 
 export type StableDomain = (typeof STABLE_DOMAINS)[number];
 export type CatalogDomain = (typeof CATALOG_DOMAINS)[number];
@@ -63,6 +74,10 @@ const CLASS_COLLECTIONS = new Map<string, CatalogDomain>([
   ['classFeature', 'classFeature'],
   ['subclassFeature', 'subclassFeature'],
 ]);
+const BACKGROUND_COLLECTIONS = new Map<string, CatalogDomain>([['background', 'background']]);
+const FEAT_COLLECTIONS = new Map<string, CatalogDomain>([['feat', 'feat']]);
+const OPTIONAL_FEATURE_COLLECTIONS = new Map<string, CatalogDomain>([['optionalfeature', 'optionalfeature']]);
+const BASTION_COLLECTIONS = new Map<string, CatalogDomain>([['facility', 'facility']]);
 
 export const DEFAULT_SOURCE_ROOT = 'data';
 
@@ -137,18 +152,34 @@ function classifyClassCompanion(projectRoot: string, path: string, fileName: str
 export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_SOURCE_ROOT): CatalogManifest {
   const sourcePath = join(projectRoot, sourceRoot);
   const racesPath = join(sourcePath, 'races.json');
+  const backgroundsPath = join(sourcePath, 'backgrounds.json');
+  const featsPath = join(sourcePath, 'feats.json');
+  const optionalFeaturesPath = join(sourcePath, 'optionalfeatures.json');
+  const bastionsPath = join(sourcePath, 'bastions.json');
   const classDirectory = join(sourcePath, 'class');
   const classIndexPath = join(sourcePath, 'class', 'index.json');
   requireFile(racesPath, 'race source file');
+  requireFile(backgroundsPath, 'background source file');
+  requireFile(featsPath, 'feat source file');
+  requireFile(optionalFeaturesPath, 'optional feature source file');
+  requireFile(bastionsPath, 'bastion source file');
   if (!existsSync(classDirectory) || !statSync(classDirectory).isDirectory()) {
     throw new ManifestError(`Required class source directory is missing: ${classDirectory}`);
   }
   requireFile(classIndexPath, 'class catalog');
 
   const raceFile = classifyEntityFile(projectRoot, racesPath, RACE_COLLECTIONS);
+  const backgroundFile = classifyEntityFile(projectRoot, backgroundsPath, BACKGROUND_COLLECTIONS);
+  const featFile = classifyEntityFile(projectRoot, featsPath, FEAT_COLLECTIONS);
+  const optionalFeatureFile = classifyEntityFile(projectRoot, optionalFeaturesPath, OPTIONAL_FEATURE_COLLECTIONS);
+  const bastionFile = classifyEntityFile(projectRoot, bastionsPath, BASTION_COLLECTIONS);
   requireDomains([raceFile], ['race', 'subrace'], 'race');
+  requireDomains([backgroundFile], ['background'], 'background');
+  requireDomains([featFile], ['feat'], 'feat');
+  requireDomains([optionalFeatureFile], ['optionalfeature'], 'optional feature');
+  requireDomains([bastionFile], ['facility'], 'bastion');
 
-  const files: ManifestFile[] = [raceFile];
+  const files: ManifestFile[] = [raceFile, backgroundFile, featFile, optionalFeatureFile, bastionFile];
   const classEntityFiles: ManifestFile[] = [];
   for (const fileName of readdirSync(classDirectory)
     .filter((fileName) => fileName.endsWith('.json'))
@@ -164,7 +195,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   }
 
   if (classEntityFiles.length === 0) throw new ManifestError(`No class entity files found in ${classDirectory}.`);
-  requireDomains(classEntityFiles, CATALOG_DOMAINS.slice(2), 'class');
+  requireDomains(classEntityFiles, CATALOG_DOMAINS.slice(6), 'class');
 
   return {
     enabledDomains: CATALOG_DOMAINS,

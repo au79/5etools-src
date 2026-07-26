@@ -37,6 +37,36 @@ void describe('Catalog queries', () => {
     assert.equal(record?.file, 'data/races.json');
   });
 
+  void test('searches player-option catalog domains', () => {
+    const catalog = getCatalog();
+
+    const backgrounds = searchCatalog(catalog, { domain: 'background', query: 'acolyte', source: 'PHB' });
+    const feats = searchCatalog(catalog, { domain: 'feat', query: 'alert', source: 'PHB' });
+    const optionalFeatures = searchCatalog(catalog, {
+      domain: 'optionalfeature',
+      query: 'agonizing blast',
+      source: 'PHB',
+    });
+    const facilities = searchCatalog(catalog, { domain: 'facility', query: 'ancient altar', source: 'RHW' });
+
+    assert.equal(backgrounds[0]?.id, 'background/acolyte/phb');
+    assert.equal(feats[0]?.id, 'feat/alert/phb');
+    assert.equal(optionalFeatures[0]?.id, 'optionalfeature/agonizing%20blast/phb');
+    assert.equal(facilities[0]?.id, 'facility/ancient%20altar/rhw');
+  });
+
+  void test('keeps duplicate player-option names ambiguous without a source', () => {
+    const catalog = getCatalog();
+
+    assert.throws(
+      () => getCatalogRecord(catalog, { domain: 'optionalfeature', name: 'Agonizing Blast' }),
+      (error: unknown) =>
+        error instanceof QueryError &&
+        error.candidates.some((candidate) => candidate.id === 'optionalfeature/agonizing%20blast/phb') &&
+        error.candidates.some((candidate) => candidate.id === 'optionalfeature/agonizing%20blast/xphb'),
+    );
+  });
+
   void test('ranks exact and name matches ahead of incidental text matches', () => {
     const catalog = {
       records: [

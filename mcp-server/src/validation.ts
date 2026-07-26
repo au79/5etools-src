@@ -5,7 +5,18 @@ import { z, type ZodType } from 'zod';
 
 import { createCatalogManifest, DEFAULT_SOURCE_ROOT } from './manifest.js';
 
-export const CATALOG_COLLECTIONS = ['race', 'subrace', 'class', 'subclass', 'classFeature', 'subclassFeature'] as const;
+export const CATALOG_COLLECTIONS = [
+  'race',
+  'subrace',
+  'background',
+  'feat',
+  'optionalfeature',
+  'facility',
+  'class',
+  'subclass',
+  'classFeature',
+  'subclassFeature',
+] as const;
 
 export type CatalogCollection = (typeof CATALOG_COLLECTIONS)[number];
 
@@ -55,6 +66,7 @@ const ENTRY_SCHEMA: ZodType<unknown> = z.lazy(() =>
         feat: JSON_VALUE_SCHEMA.optional(),
         footnotes: JSON_VALUE_SCHEMA.optional(),
         genTables: JSON_VALUE_SCHEMA.optional(),
+        id: JSON_VALUE_SCHEMA.optional(),
         isRequiredOption: JSON_VALUE_SCHEMA.optional(),
         items: z.array(ENTRY_SCHEMA).optional(),
         name: z.string().optional(),
@@ -76,7 +88,6 @@ const ENTRY_SCHEMA: ZodType<unknown> = z.lazy(() =>
   ]),
 );
 const REQUIRED_STRING_FIELDS = new Set(['source', 'className', 'classSource', 'subclassShortName', 'subclassSource']);
-const REQUIRED_NUMBER_FIELDS = new Set(['level']);
 const NUMBER_FIELDS = new Set(['page', 'header', 'blindsight', 'darkvision']);
 const ARRAY_FIELDS = new Set(['entries']);
 const OBJECT_FIELDS = new Set(['_copy', 'overwrite']);
@@ -158,6 +169,100 @@ const COLLECTION_FIELDS: Readonly<Record<CatalogCollection, readonly string[]>> 
     'toolProficiencies',
     'traitTags',
     'weaponProficiencies',
+  ],
+  background: [
+    '_copy',
+    'ability',
+    'additionalSources',
+    'additionalSpells',
+    'basicRules',
+    'basicRules2024',
+    'edition',
+    'entries',
+    'feats',
+    'fromFeature',
+    'hasFluff',
+    'hasFluffImages',
+    'languageProficiencies',
+    'name',
+    'otherSources',
+    'page',
+    'prerequisite',
+    'reprintedAs',
+    'skillProficiencies',
+    'skillToolLanguageProficiencies',
+    'source',
+    'srd',
+    'srd52',
+    'startingEquipment',
+    'toolProficiencies',
+  ],
+  feat: [
+    '_versions',
+    'ability',
+    'additionalSources',
+    'additionalSpells',
+    'armorProficiencies',
+    'basicRules2024',
+    'bonusSenses',
+    'category',
+    'conditionImmune',
+    'entries',
+    'expertise',
+    'hasFluffImages',
+    'immune',
+    'languageProficiencies',
+    'name',
+    'optionalfeatureProgression',
+    'page',
+    'prerequisite',
+    'repeatable',
+    'repeatableHidden',
+    'reprintedAs',
+    'resist',
+    'savingThrowProficiencies',
+    'senses',
+    'skillProficiencies',
+    'skillToolLanguageProficiencies',
+    'source',
+    'srd',
+    'srd52',
+    'toolProficiencies',
+    'traitTags',
+    'weaponProficiencies',
+  ],
+  optionalfeature: [
+    'additionalSpells',
+    'consumes',
+    'entries',
+    'featProgression',
+    'featureType',
+    'hasFluffImages',
+    'isClassFeatureVariant',
+    'name',
+    'optionalfeatureProgression',
+    'otherSources',
+    'page',
+    'prerequisite',
+    'reprintedAs',
+    'senses',
+    'skillProficiencies',
+    'source',
+    'srd',
+    'srd52',
+  ],
+  facility: [
+    'entries',
+    'facilityType',
+    'hasFluffImages',
+    'hirelings',
+    'level',
+    'name',
+    'orders',
+    'page',
+    'prerequisite',
+    'source',
+    'space',
   ],
   class: [
     'additionalSpells',
@@ -272,7 +377,9 @@ function getFieldSchema(collection: CatalogCollection, field: string): ZodType<u
   if (field === 'name') return collection === 'subrace' ? z.string().optional() : z.string();
   if (REQUIRED_STRING_FIELDS.has(field)) return z.string();
   if (field === 'raceName' || field === 'raceSource') return z.string().optional();
-  if (REQUIRED_NUMBER_FIELDS.has(field)) return z.number();
+  if (field === 'level') {
+    return collection === 'classFeature' || collection === 'subclassFeature' ? z.number() : z.number().optional();
+  }
   if (NUMBER_FIELDS.has(field)) return z.number().optional();
   if (ARRAY_FIELDS.has(field)) return z.array(ENTRY_SCHEMA).optional();
   if (OBJECT_FIELDS.has(field)) return z.object({}).catchall(JSON_VALUE_SCHEMA).optional();

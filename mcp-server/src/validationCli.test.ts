@@ -10,6 +10,10 @@ function createFixtureRoot(): string {
   const root = join(tmpdir(), `5etools-mcp-validation-cli-${crypto.randomUUID()}`);
   mkdirSync(join(root, 'data', 'class'), { recursive: true });
   writeFileSync(join(root, 'data', 'races.json'), '{ "race": [], "subrace": [] }');
+  writeFileSync(join(root, 'data', 'backgrounds.json'), '{ "background": [] }');
+  writeFileSync(join(root, 'data', 'feats.json'), '{ "feat": [] }');
+  writeFileSync(join(root, 'data', 'optionalfeatures.json'), '{ "optionalfeature": [] }');
+  writeFileSync(join(root, 'data', 'bastions.json'), '{ "facility": [] }');
   writeFileSync(join(root, 'data', 'class', 'index.json'), '{}');
   writeFileSync(
     join(root, 'data', 'class', 'class-fixture.json'),
@@ -33,7 +37,7 @@ void describe('Validation CLI', () => {
     const valid = runValidationCli(root);
 
     assert.equal(valid.status, 0);
-    assert.match(valid.stdout, /Validation succeeded: 2 files across data\./);
+    assert.match(valid.stdout, /Validation succeeded: 6 files across data\./);
     assert.equal(valid.stderr, '');
 
     writeFileSync(

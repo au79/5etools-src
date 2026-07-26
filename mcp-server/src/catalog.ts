@@ -73,6 +73,10 @@ export function createRecordId(domain: CatalogCollection, record: RawRecord): st
 
   switch (domain) {
     case 'race':
+    case 'background':
+    case 'feat':
+    case 'optionalfeature':
+    case 'facility':
     case 'class':
       parts = [domain, requireIdentityPart(record, 'name'), source];
       break;

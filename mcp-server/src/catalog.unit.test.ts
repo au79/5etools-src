@@ -11,6 +11,10 @@ function createFixtureRoot(): string {
   const root = mkdtempSync(join(tmpdir(), '5etools-mcp-catalog-'));
   mkdirSync(join(root, 'data', 'class'), { recursive: true });
   writeFileSync(join(root, 'data', 'races.json'), '{ "race": [], "subrace": [] }');
+  writeFileSync(join(root, 'data', 'backgrounds.json'), '{ "background": [] }');
+  writeFileSync(join(root, 'data', 'feats.json'), '{ "feat": [] }');
+  writeFileSync(join(root, 'data', 'optionalfeatures.json'), '{ "optionalfeature": [] }');
+  writeFileSync(join(root, 'data', 'bastions.json'), '{ "facility": [] }');
   writeFileSync(join(root, 'data', 'class', 'index.json'), '{}');
   writeFileSync(
     join(root, 'data', 'class', 'class-fixture.json'),
@@ -22,6 +26,10 @@ function createFixtureRoot(): string {
 function createAlternateSourceRoot(root: string, name: string): void {
   mkdirSync(join(root, name, 'class'), { recursive: true });
   writeFileSync(join(root, name, 'races.json'), '{ "race": [], "subrace": [] }');
+  writeFileSync(join(root, name, 'backgrounds.json'), '{ "background": [] }');
+  writeFileSync(join(root, name, 'feats.json'), '{ "feat": [] }');
+  writeFileSync(join(root, name, 'optionalfeatures.json'), '{ "optionalfeature": [] }');
+  writeFileSync(join(root, name, 'bastions.json'), '{ "facility": [] }');
   writeFileSync(join(root, name, 'class', 'index.json'), '{}');
   writeFileSync(
     join(root, name, 'class', 'class-fixture.json'),
@@ -42,6 +50,31 @@ void describe('Phase 1 catalog', () => {
     assert.equal(human.sourceRoot, 'data');
     assert.equal(human.id, 'race/human/phb');
     assert.equal(JSON.stringify(human.data), JSON.stringify({ ...human.data }));
+
+    const acolyte = catalog.records.find(
+      (record) => record.domain === 'background' && record.data.name === 'Acolyte' && record.source === 'PHB',
+    );
+    const alert = catalog.records.find(
+      (record) => record.domain === 'feat' && record.data.name === 'Alert' && record.source === 'PHB',
+    );
+
+    assert.equal(acolyte?.id, 'background/acolyte/phb');
+    assert.equal(acolyte?.file, 'data/backgrounds.json');
+    assert.equal(alert?.id, 'feat/alert/phb');
+    assert.equal(alert?.file, 'data/feats.json');
+
+    const agonizingBlast = catalog.records.find(
+      (record) =>
+        record.domain === 'optionalfeature' && record.data.name === 'Agonizing Blast' && record.source === 'PHB',
+    );
+    const ancientAltar = catalog.records.find(
+      (record) => record.domain === 'facility' && record.data.name === 'Ancient Altar' && record.source === 'RHW',
+    );
+
+    assert.equal(agonizingBlast?.id, 'optionalfeature/agonizing%20blast/phb');
+    assert.equal(agonizingBlast?.file, 'data/optionalfeatures.json');
+    assert.equal(ancientAltar?.id, 'facility/ancient%20altar/rhw');
+    assert.equal(ancientAltar?.file, 'data/bastions.json');
   });
 
   void test('creates stable parent-aware record IDs', () => {
@@ -53,6 +86,13 @@ void describe('Phase 1 catalog', () => {
 
   void test('distinguishes every Phase 1 identity shape', () => {
     assert.equal(createRecordId('race', { name: 'Human', source: 'PHB' }), 'race/human/phb');
+    assert.equal(createRecordId('background', { name: 'Acolyte', source: 'PHB' }), 'background/acolyte/phb');
+    assert.equal(createRecordId('feat', { name: 'Alert', source: 'PHB' }), 'feat/alert/phb');
+    assert.equal(
+      createRecordId('optionalfeature', { name: 'Agonizing Blast', source: 'PHB' }),
+      'optionalfeature/agonizing%20blast/phb',
+    );
+    assert.equal(createRecordId('facility', { name: 'Ancient Altar', source: 'RHW' }), 'facility/ancient%20altar/rhw');
     assert.equal(createRecordId('class', { name: 'Wizard', source: 'PHB' }), 'class/wizard/phb');
     assert.equal(
       createRecordId('subrace', { name: 'High Elf', raceName: 'Elf', raceSource: 'PHB', source: 'PHB' }),

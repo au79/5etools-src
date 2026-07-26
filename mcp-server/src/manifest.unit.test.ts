@@ -17,6 +17,10 @@ function createFixtureRoot(): string {
   const root = mkdtempSync(join(tmpdir(), '5etools-mcp-manifest-'));
   mkdirSync(join(root, 'data', 'class'), { recursive: true });
   writeFileSync(join(root, 'data', 'races.json'), '{ "race": [], "subrace": [] }');
+  writeFileSync(join(root, 'data', 'backgrounds.json'), '{ "background": [] }');
+  writeFileSync(join(root, 'data', 'feats.json'), '{ "feat": [] }');
+  writeFileSync(join(root, 'data', 'optionalfeatures.json'), '{ "optionalfeature": [] }');
+  writeFileSync(join(root, 'data', 'bastions.json'), '{ "facility": [] }');
   writeFileSync(join(root, 'data', 'class', 'index.json'), '{}');
   writeFileSync(
     join(root, 'data', 'class', 'class-fixture.json'),
@@ -33,6 +37,10 @@ void describe('Phase 1 manifest', () => {
     assert.equal(manifest.version, MANIFEST_VERSION);
     assert.deepEqual(manifest.enabledDomains, CATALOG_DOMAINS);
     assert.ok(manifest.files.some((file) => file.path === 'data/races.json' && file.role === 'entity'));
+    assert.ok(manifest.files.some((file) => file.path === 'data/backgrounds.json' && file.role === 'entity'));
+    assert.ok(manifest.files.some((file) => file.path === 'data/feats.json' && file.role === 'entity'));
+    assert.ok(manifest.files.some((file) => file.path === 'data/optionalfeatures.json' && file.role === 'entity'));
+    assert.ok(manifest.files.some((file) => file.path === 'data/bastions.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/class/index.json' && file.role === 'catalog'));
   });
 
@@ -66,9 +74,41 @@ void describe('Phase 1 manifest', () => {
       (error: unknown) => error instanceof ManifestError && error.message.includes('race source file'),
     );
 
+    const missingBackgroundRoot = createFixtureRoot();
+    rmSync(join(missingBackgroundRoot, 'data', 'backgrounds.json'));
+    assert.throws(
+      () => createCatalogManifest(missingBackgroundRoot),
+      (error: unknown) => error instanceof ManifestError && error.message.includes('background source file'),
+    );
+
+    const missingFeatRoot = createFixtureRoot();
+    rmSync(join(missingFeatRoot, 'data', 'feats.json'));
+    assert.throws(
+      () => createCatalogManifest(missingFeatRoot),
+      (error: unknown) => error instanceof ManifestError && error.message.includes('feat source file'),
+    );
+
+    const missingOptionalFeatureRoot = createFixtureRoot();
+    rmSync(join(missingOptionalFeatureRoot, 'data', 'optionalfeatures.json'));
+    assert.throws(
+      () => createCatalogManifest(missingOptionalFeatureRoot),
+      (error: unknown) => error instanceof ManifestError && error.message.includes('optional feature source file'),
+    );
+
+    const missingBastionRoot = createFixtureRoot();
+    rmSync(join(missingBastionRoot, 'data', 'bastions.json'));
+    assert.throws(
+      () => createCatalogManifest(missingBastionRoot),
+      (error: unknown) => error instanceof ManifestError && error.message.includes('bastion source file'),
+    );
+
     const missingClassDirectoryRoot = mkdtempSync(join(tmpdir(), '5etools-mcp-manifest-no-class-directory-'));
     mkdirSync(join(missingClassDirectoryRoot, 'data'));
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'races.json'), '{ "race": [], "subrace": [] }');
+    writeFileSync(join(missingClassDirectoryRoot, 'data', 'backgrounds.json'), '{ "background": [] }');
+    writeFileSync(join(missingClassDirectoryRoot, 'data', 'feats.json'), '{ "feat": [] }');
+    writeFileSync(join(missingClassDirectoryRoot, 'data', 'optionalfeatures.json'), '{ "optionalfeature": [] }');
+    writeFileSync(join(missingClassDirectoryRoot, 'data', 'bastions.json'), '{ "facility": [] }');
     assert.throws(
       () => createCatalogManifest(missingClassDirectoryRoot),
       (error: unknown) => error instanceof ManifestError && error.message.includes('class source directory'),

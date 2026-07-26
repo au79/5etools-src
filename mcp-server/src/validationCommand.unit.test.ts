@@ -10,6 +10,10 @@ function createFixtureRoot(): string {
   const root = join(tmpdir(), `5etools-mcp-validation-command-${crypto.randomUUID()}`);
   mkdirSync(join(root, 'data', 'class'), { recursive: true });
   writeFileSync(join(root, 'data', 'races.json'), '{ "race": [], "subrace": [] }');
+  writeFileSync(join(root, 'data', 'backgrounds.json'), '{ "background": [] }');
+  writeFileSync(join(root, 'data', 'feats.json'), '{ "feat": [] }');
+  writeFileSync(join(root, 'data', 'optionalfeatures.json'), '{ "optionalfeature": [] }');
+  writeFileSync(join(root, 'data', 'bastions.json'), '{ "facility": [] }');
   writeFileSync(join(root, 'data', 'class', 'index.json'), '{}');
   writeFileSync(
     join(root, 'data', 'class', 'class-fixture.json'),
@@ -21,6 +25,10 @@ function createFixtureRoot(): string {
 function addSourceRoot(root: string, name: string): void {
   mkdirSync(join(root, name, 'class'), { recursive: true });
   writeFileSync(join(root, name, 'races.json'), '{ "race": [], "subrace": [] }');
+  writeFileSync(join(root, name, 'backgrounds.json'), '{ "background": [] }');
+  writeFileSync(join(root, name, 'feats.json'), '{ "feat": [] }');
+  writeFileSync(join(root, name, 'optionalfeatures.json'), '{ "optionalfeature": [] }');
+  writeFileSync(join(root, name, 'bastions.json'), '{ "facility": [] }');
   writeFileSync(join(root, name, 'class', 'index.json'), '{}');
   writeFileSync(
     join(root, name, 'class', 'class-fixture.json'),
@@ -34,8 +42,8 @@ void describe('Validation command', () => {
     const result = runValidationCommand({ defaultProjectRoot: root, environment: {}, workingDirectory: root });
 
     assert.equal(result.results.length, 1);
-    assert.equal(result.results[0]?.files.length, 2);
-    assert.equal(formatValidationSummary(result), 'Validation succeeded: 2 files across data.');
+    assert.equal(result.results[0]?.files.length, 6);
+    assert.equal(formatValidationSummary(result), 'Validation succeeded: 6 files across data.');
   });
 
   void test('uses the same source precedence as server startup', () => {

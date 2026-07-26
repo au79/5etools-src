@@ -12,8 +12,33 @@ import {
 void describe('Phase 1 validation', () => {
   void test('accepts minimal records and preserves the raw records', () => {
     const records = [{ name: 'Human', source: 'PHB', entries: ['A tagged {@spell shield} entry.'] }];
+    const backgrounds = [{ entries: ['A learned priest.'], name: 'Acolyte', source: 'PHB' }];
+    const feats = [{ entries: ['Always alert.'], name: 'Alert', source: 'PHB' }];
+    const optionalFeatures = [{ featureType: ['EI'], name: 'Agonizing Blast', source: 'PHB' }];
+    const facilities = [{ facilityType: 'special', level: 5, name: 'Ancient Altar', source: 'RHW' }];
 
     assert.strictEqual(validateCollectionRecords('data/races.json', 'race', records), records);
+    assert.strictEqual(validateCollectionRecords('data/backgrounds.json', 'background', backgrounds), backgrounds);
+    assert.strictEqual(validateCollectionRecords('data/feats.json', 'feat', feats), feats);
+    assert.strictEqual(
+      validateCollectionRecords('data/optionalfeatures.json', 'optionalfeature', optionalFeatures),
+      optionalFeatures,
+    );
+    assert.strictEqual(validateCollectionRecords('data/bastions.json', 'facility', facilities), facilities);
+    assert.doesNotThrow(() =>
+      validateCollectionRecords('data/bastions.json', 'facility', [
+        { facilityType: 'basic', name: 'Bedroom', source: 'XDMG' },
+      ]),
+    );
+    assert.doesNotThrow(() =>
+      validateCollectionRecords('data/backgrounds.json', 'background', [
+        {
+          entries: [{ entries: ['A table follows.'], id: 'table-1', name: 'Details', type: 'section' }],
+          name: 'Sage',
+          source: 'PHB',
+        },
+      ]),
+    );
     assert.deepEqual(
       validateCollectionRecords('class-fixture.json', 'classFeature', [
         { className: 'Fighter', classSource: 'PHB', level: 1, name: 'Feature', source: 'PHB' },
@@ -105,6 +130,10 @@ void describe('Phase 1 validation', () => {
     const result = validateCatalogProjectRoot(projectRoot);
 
     assert.ok(result.files.includes('data/races.json'));
+    assert.ok(result.files.includes('data/backgrounds.json'));
+    assert.ok(result.files.includes('data/feats.json'));
+    assert.ok(result.files.includes('data/optionalfeatures.json'));
+    assert.ok(result.files.includes('data/bastions.json'));
     assert.ok(result.files.some((file) => file.startsWith('data/class/class-')));
   });
 });

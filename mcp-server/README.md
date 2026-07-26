@@ -3,25 +3,29 @@
 This is an independent package for exposing the enclosing 5etools data repository through MCP.
 
 The package is intentionally separate from the upstream site. It has its own manifest, lockfile, source, tests, and
-documentation. The package uses the MCP SDK, Zod, and Pino selected in Phase 1. It is a read-only data service for the
-Phase 1 races/classes rollout.
+documentation. The package uses the MCP SDK, Zod, and Pino. It is a read-only data service for catalog records.
 
 ## Current status
 
-The server completes the MCP lifecycle, responds to standard `ping`, validates the configured Phase 1 data before
+The server completes the MCP lifecycle, responds to standard `ping`, validates the configured catalog before
 serving requests, and advertises three read-only tools:
 
 - `server_metadata` returns package identity, the running Git commit, and dirty-working-tree state.
-- `search` searches raw validated `race`, `subrace`, `class`, `subclass`, `classFeature`, and `subclassFeature`
-  records. It accepts a required `query`, plus optional `domain`, `source`, `sourceRoot`, and a `limit` from 1 through
-  100 (20 by default).
+- `search` searches raw validated `race`, `subrace`, `background`, `feat`, `optionalfeature`, `facility`, `class`,
+  `subclass`, `classFeature`, and `subclassFeature` records. It accepts a required `query`, plus optional `domain`,
+  `source`, `sourceRoot`, and a `limit` from 1 through 100 (20 by default). `facility` is the upstream collection name
+  for records stored in `bastions.json`.
 - `get` retrieves one raw provenance envelope by stable `id`, or by exact `domain` and `name` with optional `source`
   and `sourceRoot` filters. Ambiguous exact requests return safe disambiguation candidates instead of selecting one.
 
 Every data result preserves the raw record in `data` and includes `domain`, `id`, `source`, `sourceRoot`, originating
 `file`, and any available `edition` and `page`. The initial source root is `data`; `prerelease` and `homebrew` are
-disabled unless explicitly enabled. Enabled source roots must contain the same Phase 1 races/classes layout, and a
-stable-ID collision across roots fails startup rather than merging records silently. Adventures are not exposed.
+disabled unless explicitly enabled. Enabled source roots must contain the same catalog layout, and a stable-ID collision
+across roots fails startup rather than merging records silently. Adventures are not exposed.
+
+Representative raw-record requests are `search({"domain":"background","query":"acolyte"})`,
+`search({"domain":"feat","query":"alert"})`, `search({"domain":"optionalfeature","query":"agonizing blast"})`,
+and `get({"id":"facility/ancient%20altar/rhw"})`. Tagged text remains unchanged inside each result's `data` payload.
 
 ## Resume here: OpenAI ChatGPT
 
@@ -94,7 +98,7 @@ pnpm start --root /path/to/5etools-src --sources data,homebrew --log-pretty
 
 The corresponding environment variables are `MCP_5ETOOLS_ROOT`, `MCP_5ETOOLS_CONFIG`, `MCP_5ETOOLS_SOURCES`,
 `MCP_5ETOOLS_LOG_LEVEL`, and `MCP_5ETOOLS_LOG_PRETTY`. The config file also supports `adventures`. The current public
-surface remains the read-only races/classes catalog.
+surface remains the read-only catalog.
 
 ## Validate data
 
