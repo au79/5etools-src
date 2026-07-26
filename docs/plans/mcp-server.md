@@ -49,6 +49,11 @@ Expand through player-facing groups first, then DM-facing groups. Only after the
 - MCP SDK and transport choices affect client compatibility and dependency churn. Pin the smallest supported surface and keep transport-specific code isolated.
 - Observability must never corrupt `stdio`; library and JSON schema selection should be evaluated against stderr behavior and future transport needs.
 
+## Deferred discovery
+
+- Revisit whether catalog roots outside the standard `data/`, `prerelease/`, and `homebrew/` locations are a product requirement or merely a test-fixture convenience. Keep the current configuration narrow unless a concrete ingestion use case justifies its complexity.
+- Trace the catalog pipeline end to end—configuration, manifest discovery, validation, catalog construction, query, and MCP response—to document its data flow and identify any unnecessary coupling before later domain expansion.
+
 ## Acceptance criteria for the detailed implementation
 
 - ChatGPT can launch the local server over `stdio`, discover the exposed catalog, search races/classes, and retrieve exact raw records.

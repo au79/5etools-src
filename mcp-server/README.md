@@ -3,13 +3,25 @@
 This is an independent package for exposing the enclosing 5etools data repository through MCP.
 
 The package is intentionally separate from the upstream site. It has its own manifest, lockfile, source, tests, and
-documentation. The package uses the MCP SDK, Zod, and Pino selected in Phase 1. It is currently a transport-only
-integration shell; D&D data access is not implemented yet.
+documentation. The package uses the MCP SDK, Zod, and Pino selected in Phase 1. It is a read-only data service for the
+Phase 1 races/classes rollout.
 
 ## Current status
 
-P1-03A establishes the MCP transport integration gate. The server completes the MCP lifecycle, responds to standard
-`ping`, advertises a `server_metadata` diagnostic tool, and reports its package metadata and running git commit hash.
+The server completes the MCP lifecycle, responds to standard `ping`, validates the configured Phase 1 data before
+serving requests, and advertises three read-only tools:
+
+- `server_metadata` returns package identity, the running Git commit, and dirty-working-tree state.
+- `search` searches raw validated `race`, `subrace`, `class`, `subclass`, `classFeature`, and `subclassFeature`
+  records. It accepts a required `query`, plus optional `domain`, `source`, `sourceRoot`, and a `limit` from 1 through
+  100 (20 by default).
+- `get` retrieves one raw provenance envelope by stable `id`, or by exact `domain` and `name` with optional `source`
+  and `sourceRoot` filters. Ambiguous exact requests return safe disambiguation candidates instead of selecting one.
+
+Every data result preserves the raw record in `data` and includes `domain`, `id`, `source`, `sourceRoot`, originating
+`file`, and any available `edition` and `page`. The initial source root is `data`; `prerelease` and `homebrew` are
+disabled unless explicitly enabled. Enabled source roots must contain the same Phase 1 races/classes layout, and a
+stable-ID collision across roots fails startup rather than merging records silently. Adventures are not exposed.
 
 ## Resume here: OpenAI ChatGPT
 
@@ -66,8 +78,24 @@ live in `test/` with their integration-oriented name. `pnpm run test:coverage` r
 coverage for production source, excluding only unit-test files and `cli.ts`, which only wires process startup and failure
 handling to `process.exitCode`.
 
-The server writes logs only to stderr. MCP `stdio` protocol traffic remains on stdout. The package does not load D&D
-data, prerelease, homebrew, or adventure content in this integration phase.
+The server writes logs only to stderr. MCP `stdio` protocol traffic remains on stdout. Startup and each tool action emit
+structured start/completion/failure events with a correlation ID and duration. Logs contain only bounded safe context:
+they exclude raw queries, returned records, full filesystem paths, and unexpected error messages.
+
+## Configuration
+
+Configuration precedence is CLI arguments, then environment variables, then `.5etools-mcp.jsonc` in the selected
+project root, then safe defaults. The default project root is the enclosing checkout and the default source root is
+`data`.
+
+```bash
+pnpm start -- --root /path/to/5etools-src --sources data,homebrew --log-pretty
+```
+
+The corresponding environment variables are `MCP_5ETOOLS_ROOT`, `MCP_5ETOOLS_CONFIG`, `MCP_5ETOOLS_SOURCES`,
+`MCP_5ETOOLS_LOG_LEVEL`, and `MCP_5ETOOLS_LOG_PRETTY`. The config file also supports `adventures` and
+`validationRollout`; those controls are retained for the broader rollout, but the current public surface remains the
+read-only Phase 1 races/classes catalog.
 
 For human-readable local development logs, set `MCP_5ETOOLS_LOG_PRETTY=true` when launching the server directly:
 

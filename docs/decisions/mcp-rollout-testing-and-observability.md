@@ -18,6 +18,10 @@ Require observability from the first implementation. Select a logging library an
 
 Use `pino@10.3.1` for structured JSON logging and include `pino-pretty@13.1.3` as an opt-in human-readable local formatter. JSON on `stderr` remains the default; pretty output must never be sent to protocol `stdout`.
 
+Log configuration, validation, catalog construction, server lifecycle, and every MCP tool call as paired structured start/completion/failure events. Each event carries a generated operation ID, elapsed duration where applicable, and only bounded, allowlisted context. Do not log raw query text, raw records, full filesystem paths, or unexpected error messages. Return a generic safe error to the client for unexpected failures.
+
+The internal wrapper is `observeAction`. Its options use `action` for the synchronous work it surrounds. This names the instrumentation behavior rather than implying generic logging, while remaining plainer than `operation`.
+
 ## Rationale
 
 The steel thread proves the full user path quickly without waiting for every domain. Grouped expansion keeps schema work reviewable. Independent validation makes parent-fork edits checkable without starting the server. Observability is required to diagnose startup validation and MCP request failures.
@@ -28,6 +32,7 @@ The steel thread proves the full user path quickly without waiting for every dom
 - Rendering, derived helpers, encounter/character assistance, and rules adjudication are deferred until the raw read-only surface is reliable.
 - Logging library and JSON schema remain a near-term implementation choice, not a reason to delay the architecture.
 - Pretty local logs are a convenience mode, not a replacement for machine-readable JSON or a protocol output channel.
+- Each observed action produces start/completion/failure events that can be correlated by operation ID without exposing user-supplied data.
 - The MCP package overrides its transitive `@hono/node-server` dependency to patched `2.0.11`; `npm audit --omit=dev` reports no vulnerabilities.
 - `typescript@6.0.3` is pinned in the package lockfile as the latest reasonable version compatible with the current TypeScript-aware ESLint stack; revisit when TypeScript 7 support is available.
 

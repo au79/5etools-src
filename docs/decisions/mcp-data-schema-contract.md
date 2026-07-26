@@ -12,6 +12,8 @@ The initial MCP surface is read-only `search` and `get` over validated raw recor
 
 Search may return multiple same-named records with prominent labels. Exact retrieval must disambiguate ambiguous names.
 
+Catalog construction may combine enabled standard source roots while preserving each record's source-root provenance. Stable-ID collisions across roots are startup failures rather than silent merges. Treat support for arbitrary non-standard roots as deferred discovery, not a current ingestion commitment.
+
 ## Rationale
 
 Strict validation makes parent-fork refreshes visible instead of silently producing incomplete or misleading rules answers. Domain adapters preserve useful differences between creatures, spells, classes, books, and other data while providing a stable MCP envelope.
@@ -25,6 +27,7 @@ Strict validation makes parent-fork refreshes visible instead of silently produc
 - `exactOptionalPropertyTypes` is enabled so absent optional fields remain distinct from fields explicitly set to `undefined`.
 - Recursive or heterogeneous structures such as `entries` and book/adventure trees need explicit schema treatment and documented extension points.
 - Character-builder assistance is a future read-only consumer of structured options, prerequisites, choices, and relationships; Phase 1 provides no character-building operations.
+- The catalog's configuration, manifest discovery, validation, construction, query, and MCP-response stages remain separate and should be traced end to end before later domain expansion.
 
 ## Revisit triggers
 

@@ -1,7 +1,7 @@
 # Phase 1 record-shape inventory
 
-This note records the current checked-in Phase 1 shapes before strict schemas are introduced. It is an inventory, not
-a normalization rule: catalog and query layers retain each validated raw record unchanged.
+This note records the current checked-in Phase 1 shapes used by the strict schemas. It is an inventory, not a
+normalization rule: catalog and query layers retain each validated raw record unchanged inside provenance envelopes.
 
 ## Shared layer
 
@@ -32,6 +32,6 @@ The current files use `_copy` and `_versions` as source-data inheritance/version
 points, not arbitrary passthrough fields. `hasFluff`, `hasFluffImages`, `fluff`, and presentation-only class files are
 also explicit presentation metadata and are not a new public MCP domain.
 
-P1-06 must use strict collection schemas: an unknown top-level record field, renamed field, incompatible type, or
-unknown nested structure fails validation unless this note is amended intentionally. Domain-specific payloads remain in
-the raw record rather than being flattened into the shared layer.
+`src/validation.ts` uses strict collection schemas: an unknown top-level record field, renamed field, incompatible
+type, or unknown nested structure fails validation unless this note and the schema are amended intentionally.
+Domain-specific payloads remain in the raw record rather than being flattened into the shared layer.

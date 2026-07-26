@@ -24,8 +24,10 @@ works, continue with the relevant setup or troubleshooting section below.
 
 ## Scope and safety
 
-- The server currently exposes only the `server_metadata` diagnostic tool. D&D data tools are not available yet.
-- The server is read-only. Do not add secrets, personal data, or campaign material to its source tree.
+- The server exposes `server_metadata`, `search`, and `get`. The data tools serve raw, validated Phase 1 race/class
+  records with provenance; they do not render 5etools tags or provide rules adjudication.
+- The server is read-only. Do not add secrets, personal data, or campaign material to its source tree. Adventures are
+  not exposed by the current public tool surface.
 - `tunnel-client` and the server run on your machine. The server remains private; the tunnel makes only an OpenAI-hosted
   endpoint available to supported OpenAI products.
 - Do not commit, paste into shell history, screenshot, or share `CONTROL_PLANE_API_KEY` in ChatGPT messages.
@@ -34,7 +36,8 @@ works, continue with the relevant setup or troubleshooting section below.
 
 You need all of the following before the ChatGPT test can succeed:
 
-1. A ChatGPT account/workspace where Developer Mode is enabled and where you can create a developer-mode app.
+1. A ChatGPT account/workspace where you can enable Developer Mode and create a developer-mode app. Enterprise/Edu
+   workspace admins grant that access; users then enable it in ChatGPT Settings → Security and login.
 2. An OpenAI Platform organization where you have Tunnels Read + Manage to create a tunnel and Tunnels Read + Use to
    run it.
 3. A tunnel associated with the target ChatGPT workspace and a recorded `tunnel_id`.
@@ -72,8 +75,9 @@ pnpm run check
 pnpm run smoke:stdio
 ```
 
-Expected result: the smoke command reports that `ping`, `tools/list`, and `server_metadata` passed. This verifies the
-local stdio server before adding the tunnel.
+Expected result: the smoke command reports that `ping`, `tools/list`, and `server_metadata` passed, and lists
+`server_metadata`, `search`, and `get` as advertised tools. This verifies the local stdio server before adding the
+tunnel.
 
 ## Create the stdio tunnel profile
 
@@ -106,7 +110,8 @@ another reconnect that loads the new build.
 Run `doctor` **before** `run`: it tests whether the configured local health port is free. Once `run` owns that port,
 re-running `doctor` reports an expected bind conflict rather than a tunnel failure. Leave `run` active while you test
 ChatGPT. The tunnel client should report healthy, ready, and connected. Its loopback admin UI, health, readiness, and
-metrics endpoints are for local operator use; do not expose them remotely by default.
+metrics endpoints (`/ui`, `/healthz`, `/readyz`, and `/metrics`) are for local operator use; do not expose them
+remotely by default.
 
 ## Create the ChatGPT developer-mode app
 
@@ -115,10 +120,12 @@ metrics endpoints are for local operator use; do not expose them remotely by def
 3. Select the `CONTROL_PLANE_TUNNEL_ID` tunnel. If it is not listed, verify the tunnel's ChatGPT-workspace association and your
    Tunnels Read + Use permission.
 4. Scan tools, then create the draft app.
-5. In a new ChatGPT conversation, select the draft app and ask it to call `server_metadata`.
+5. In a new ChatGPT conversation, select the draft app and ask it to search for a race or class, such as “Search for
+   Wizard.”
 
-Expected result: ChatGPT discovers one `server_metadata` tool and reports the package name, version, description, Git
-commit, and dirty-working-tree state from the running local build.
+Expected result: ChatGPT discovers `server_metadata`, `search`, and `get`. A search returns raw provenance envelopes;
+an exact `get` can then use a returned ID. `server_metadata` remains available to confirm the package name, version,
+description, Git commit, and dirty-working-tree state from the running local build.
 
 ## Later chats and server updates
 
@@ -132,13 +139,13 @@ snapshot until that refresh occurs.
 
 ## Troubleshooting
 
-| Symptom                               | Check                                                                                   |
-| ------------------------------------- | --------------------------------------------------------------------------------------- |
-| Tunnel is absent in ChatGPT           | Associate it with the intended ChatGPT workspace, then confirm Tunnels Read + Use.      |
-| Tool scan or calls fail               | Confirm `pnpm codex:tunnel:run` is still active, then rerun `pnpm codex:tunnel:doctor`. |
-| Local verification fails              | Run `pnpm run smoke:stdio` and fix that before testing the tunnel.                      |
-| Server metadata is stale              | Rebuild with `pnpm run build`, recreate/restart the profile, and rescan tools.          |
-| ChatGPT does not reflect tool changes | Refresh the app's actions; ChatGPT retains an approved tool snapshot.                   |
+| Symptom                               | Check                                                                                                                                                                                             |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tunnel is absent in ChatGPT           | Associate it with the intended ChatGPT workspace, then confirm Tunnels Read + Use.                                                                                                                |
+| Tool scan or calls fail               | Confirm `pnpm codex:tunnel:run` is still active and check `/healthz` and `/readyz`. Do not rerun `doctor` while it owns the health port; stop the daemon first if a fresh doctor check is needed. |
+| Local verification fails              | Run `pnpm run smoke:stdio` and fix that before testing the tunnel.                                                                                                                                |
+| Server metadata or data is stale      | Rebuild with `pnpm run build`, restart the tunnel, and rescan tools if their definitions changed.                                                                                                 |
+| ChatGPT does not reflect tool changes | Refresh the app's actions; ChatGPT retains an approved tool snapshot.                                                                                                                             |
 
 ## Safe shutdown
 
