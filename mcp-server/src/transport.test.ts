@@ -100,6 +100,31 @@ void describe('MCP stdio transport', () => {
         'spell/acid%20splash/phb',
       );
 
+      const equipmentGets = [
+        [{ domain: 'item', name: 'Bag of Holding', source: 'DMG' }, 'item/bag%20of%20holding/dmg'],
+        [{ domain: 'itemGroup', name: 'Arcane Focus', source: 'PHB' }, 'itemgroup/arcane%20focus/phb'],
+        [{ domain: 'itemBase', name: 'Dagger', source: 'PHB' }, 'itembase/dagger/phb'],
+        [{ abbreviation: 'A', domain: 'itemProperty', source: 'PHB' }, 'itemproperty/a/phb'],
+        [{ domain: 'itemType', name: 'Melee Weapon', source: 'PHB' }, 'itemtype/melee%20weapon/phb'],
+        [
+          { domain: 'itemTypeAdditionalEntries', name: 'Gaming Set', source: 'XGE' },
+          'itemtypeadditionalentries/gaming%20set/xge',
+        ],
+        [{ domain: 'itemEntry', name: 'Absorbing Tattoo', source: 'TCE' }, 'itementry/absorbing%20tattoo/tce'],
+        [{ domain: 'itemMastery', name: 'Cleave', source: 'XPHB' }, 'itemmastery/cleave/xphb'],
+        [{ domain: 'vehicle', name: 'Apparatus of Kwalish', source: 'DMG' }, 'vehicle/apparatus%20of%20kwalish/dmg'],
+        [
+          { domain: 'vehicleUpgrade', name: 'Acidic Bile Sprayer', source: 'BGDIA' },
+          'vehicleupgrade/acidic%20bile%20sprayer/bgdia',
+        ],
+      ] as const;
+      for (const [arguments_, id] of equipmentGets) {
+        const equipment = await client.callTool({ arguments: arguments_, name: GET_TOOL });
+        const equipmentContent = getFirstContent(equipment.content);
+        if (!isTextContent(equipmentContent)) throw new Error('The equipment get tool did not return text content');
+        assert.equal((JSON.parse(equipmentContent.text) as { readonly id?: unknown }).id, id);
+      }
+
       const get = await client.callTool({ arguments: { id: 'race/human/phb' }, name: GET_TOOL });
       const getContent = getFirstContent(get.content);
       if (!isTextContent(getContent)) throw new Error('The get tool did not return text content');

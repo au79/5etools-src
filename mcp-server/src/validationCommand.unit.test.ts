@@ -15,6 +15,12 @@ function createFixtureRoot(): string {
   writeFileSync(join(root, 'data', 'feats.json'), '{ "feat": [] }');
   writeFileSync(join(root, 'data', 'optionalfeatures.json'), '{ "optionalfeature": [] }');
   writeFileSync(join(root, 'data', 'bastions.json'), '{ "facility": [] }');
+  writeFileSync(join(root, 'data', 'items.json'), '{ "item": [], "itemGroup": [] }');
+  writeFileSync(
+    join(root, 'data', 'items-base.json'),
+    '{ "baseitem": [], "itemProperty": [], "itemType": [], "itemTypeAdditionalEntries": [], "itemEntry": [], "itemMastery": [] }',
+  );
+  writeFileSync(join(root, 'data', 'vehicles.json'), '{ "vehicle": [], "vehicleUpgrade": [] }');
   writeFileSync(join(root, 'data', 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
   writeFileSync(join(root, 'data', 'spells', 'spells-fixture.json'), '{ "spell": [] }');
   writeFileSync(join(root, 'data', 'class', 'index.json'), '{}');
@@ -33,6 +39,12 @@ function addSourceRoot(root: string, name: string): void {
   writeFileSync(join(root, name, 'feats.json'), '{ "feat": [] }');
   writeFileSync(join(root, name, 'optionalfeatures.json'), '{ "optionalfeature": [] }');
   writeFileSync(join(root, name, 'bastions.json'), '{ "facility": [] }');
+  writeFileSync(join(root, name, 'items.json'), '{ "item": [], "itemGroup": [] }');
+  writeFileSync(
+    join(root, name, 'items-base.json'),
+    '{ "baseitem": [], "itemProperty": [], "itemType": [], "itemTypeAdditionalEntries": [], "itemEntry": [], "itemMastery": [] }',
+  );
+  writeFileSync(join(root, name, 'vehicles.json'), '{ "vehicle": [], "vehicleUpgrade": [] }');
   writeFileSync(join(root, name, 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
   writeFileSync(join(root, name, 'spells', 'spells-fixture.json'), '{ "spell": [] }');
   writeFileSync(join(root, name, 'class', 'index.json'), '{}');
@@ -48,8 +60,8 @@ void describe('Validation command', () => {
     const result = runValidationCommand({ defaultProjectRoot: root, environment: {}, workingDirectory: root });
 
     assert.equal(result.results.length, 1);
-    assert.equal(result.results[0]?.files.length, 7);
-    assert.equal(formatValidationSummary(result), 'Validation succeeded: 7 files across data.');
+    assert.equal(result.results[0]?.files.length, 10);
+    assert.equal(formatValidationSummary(result), 'Validation succeeded: 10 files across data.');
   });
 
   void test('uses the same source precedence as server startup', () => {

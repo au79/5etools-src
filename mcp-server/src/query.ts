@@ -13,6 +13,7 @@ export interface SearchCatalogOptions {
 }
 
 export interface GetCatalogOptions {
+  readonly abbreviation?: string | undefined;
   readonly domain?: CatalogCollection | undefined;
   readonly id?: string | undefined;
   readonly name?: string | undefined;
@@ -104,22 +105,23 @@ export function searchCatalog(catalog: Catalog, options: SearchCatalogOptions): 
 
 export function getCatalogRecord(catalog: Catalog, options: GetCatalogOptions): CatalogRecord | undefined {
   if (options.id !== undefined) return catalog.records.find((record) => record.id === options.id);
-  if (options.domain === undefined || options.name === undefined) {
-    throw new QueryError('Provide an ID or both domain and name for exact retrieval.');
+  if (options.domain === undefined || (options.name === undefined && options.abbreviation === undefined)) {
+    throw new QueryError('Provide an ID or a domain with a name or abbreviation for exact retrieval.');
   }
 
   const matches = order(
     catalog.records.filter(
       (record) =>
         record.domain === options.domain &&
-        record.data.name === options.name &&
+        (options.name === undefined || record.data.name === options.name) &&
+        (options.abbreviation === undefined || record.data.abbreviation === options.abbreviation) &&
         (options.source === undefined || record.source === options.source) &&
         (options.sourceRoot === undefined || record.sourceRoot === options.sourceRoot),
     ),
   );
   if (matches.length < 2) return matches[0];
   throw new QueryError(
-    `Exact retrieval is ambiguous for ${options.domain}/${options.name}.`,
+    `Exact retrieval is ambiguous for ${options.domain}/${options.name ?? options.abbreviation}.`,
     matches.map(getCandidate),
   );
 }

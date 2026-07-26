@@ -78,8 +78,20 @@ export function createRecordId(domain: CatalogCollection, record: RawRecord): st
     case 'optionalfeature':
     case 'facility':
     case 'spell':
+    case 'item':
+    case 'itemGroup':
+    case 'itemBase':
+    case 'itemType':
+    case 'itemTypeAdditionalEntries':
+    case 'itemEntry':
+    case 'itemMastery':
+    case 'vehicle':
+    case 'vehicleUpgrade':
     case 'class':
       parts = [domain, requireIdentityPart(record, 'name'), source];
+      break;
+    case 'itemProperty':
+      parts = [domain, requireIdentityPart(record, 'abbreviation'), source];
       break;
     case 'subrace':
       parts = [
@@ -159,8 +171,15 @@ export function createCatalog(
       if (file.role !== 'entity') continue;
       const relativePath = file.path.slice(`${sourceRoot.name}/`.length);
       const value: unknown = JSON.parse(readFileSync(join(sourceRoot.path, relativePath), 'utf8'));
-      const collections = file.collections.flatMap((collection) => collection.domain ?? []);
-      const validated = validateCollectionFile(file.path, value, collections);
+      const entityCollections = file.collections.filter((collection) => collection.domain !== undefined);
+      const collections = entityCollections.map((collection) => collection.domain!);
+      const validated = validateCollectionFile(
+        file.path,
+        value,
+        collections,
+        entityCollections.map((collection) => collection.name),
+        file.collections.map((collection) => collection.name),
+      );
 
       for (const collection of collections) {
         for (const record of validated[collection]!) {

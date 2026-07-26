@@ -24,6 +24,16 @@ export const CATALOG_DOMAINS = [
   'optionalfeature',
   'facility',
   'spell',
+  'item',
+  'itemGroup',
+  'itemBase',
+  'itemProperty',
+  'itemType',
+  'itemTypeAdditionalEntries',
+  'itemEntry',
+  'itemMastery',
+  'vehicle',
+  'vehicleUpgrade',
   'class',
   'subclass',
   'classFeature',
@@ -80,6 +90,22 @@ const FEAT_COLLECTIONS = new Map<string, CatalogDomain>([['feat', 'feat']]);
 const OPTIONAL_FEATURE_COLLECTIONS = new Map<string, CatalogDomain>([['optionalfeature', 'optionalfeature']]);
 const BASTION_COLLECTIONS = new Map<string, CatalogDomain>([['facility', 'facility']]);
 const SPELL_COLLECTIONS = new Map<string, CatalogDomain>([['spell', 'spell']]);
+const ITEM_COLLECTIONS = new Map<string, CatalogDomain>([
+  ['item', 'item'],
+  ['itemGroup', 'itemGroup'],
+]);
+const ITEM_BASE_COLLECTIONS = new Map<string, CatalogDomain>([
+  ['baseitem', 'itemBase'],
+  ['itemEntry', 'itemEntry'],
+  ['itemMastery', 'itemMastery'],
+  ['itemProperty', 'itemProperty'],
+  ['itemType', 'itemType'],
+  ['itemTypeAdditionalEntries', 'itemTypeAdditionalEntries'],
+]);
+const VEHICLE_COLLECTIONS = new Map<string, CatalogDomain>([
+  ['vehicle', 'vehicle'],
+  ['vehicleUpgrade', 'vehicleUpgrade'],
+]);
 
 export const DEFAULT_SOURCE_ROOT = 'data';
 
@@ -114,11 +140,10 @@ function classifyEntityFile(
       continue;
     }
 
-    const domain = collectionDomains.get(collection);
-    if (domain === undefined) {
+    if (!collectionDomains.has(collection)) {
       throw new ManifestError(`Unclassified top-level collection ${JSON.stringify(collection)} in ${path}.`);
     }
-    collections.push({ domain, name: collection });
+    collections.push({ domain: collectionDomains.get(collection)!, name: collection });
   }
 
   return { collections, path: toManifestPath(projectRoot, path), role: 'entity' };
@@ -186,6 +211,9 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   const featsPath = join(sourcePath, 'feats.json');
   const optionalFeaturesPath = join(sourcePath, 'optionalfeatures.json');
   const bastionsPath = join(sourcePath, 'bastions.json');
+  const itemsPath = join(sourcePath, 'items.json');
+  const itemBasesPath = join(sourcePath, 'items-base.json');
+  const vehiclesPath = join(sourcePath, 'vehicles.json');
   const classDirectory = join(sourcePath, 'class');
   const classIndexPath = join(sourcePath, 'class', 'index.json');
   requireFile(racesPath, 'race source file');
@@ -193,6 +221,9 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   requireFile(featsPath, 'feat source file');
   requireFile(optionalFeaturesPath, 'optional feature source file');
   requireFile(bastionsPath, 'bastion source file');
+  requireFile(itemsPath, 'item source file');
+  requireFile(itemBasesPath, 'base item source file');
+  requireFile(vehiclesPath, 'vehicle source file');
   if (!existsSync(classDirectory) || !statSync(classDirectory).isDirectory()) {
     throw new ManifestError(`Required class source directory is missing: ${classDirectory}`);
   }
@@ -203,14 +234,34 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   const featFile = classifyEntityFile(projectRoot, featsPath, FEAT_COLLECTIONS);
   const optionalFeatureFile = classifyEntityFile(projectRoot, optionalFeaturesPath, OPTIONAL_FEATURE_COLLECTIONS);
   const bastionFile = classifyEntityFile(projectRoot, bastionsPath, BASTION_COLLECTIONS);
+  const itemFile = classifyEntityFile(projectRoot, itemsPath, ITEM_COLLECTIONS);
+  const itemBaseFile = classifyEntityFile(projectRoot, itemBasesPath, ITEM_BASE_COLLECTIONS);
+  const vehicleFile = classifyEntityFile(projectRoot, vehiclesPath, VEHICLE_COLLECTIONS);
   const spellFiles = classifySpellFiles(projectRoot, sourcePath);
   requireDomains([raceFile], ['race', 'subrace'], 'race');
   requireDomains([backgroundFile], ['background'], 'background');
   requireDomains([featFile], ['feat'], 'feat');
   requireDomains([optionalFeatureFile], ['optionalfeature'], 'optional feature');
   requireDomains([bastionFile], ['facility'], 'bastion');
+  requireDomains([itemFile], ['item', 'itemGroup'], 'item');
+  requireDomains(
+    [itemBaseFile],
+    ['itemBase', 'itemProperty', 'itemType', 'itemTypeAdditionalEntries', 'itemEntry', 'itemMastery'],
+    'base item',
+  );
+  requireDomains([vehicleFile], ['vehicle', 'vehicleUpgrade'], 'vehicle');
 
-  const files: ManifestFile[] = [raceFile, backgroundFile, featFile, optionalFeatureFile, bastionFile, ...spellFiles];
+  const files: ManifestFile[] = [
+    raceFile,
+    backgroundFile,
+    featFile,
+    optionalFeatureFile,
+    bastionFile,
+    itemFile,
+    itemBaseFile,
+    vehicleFile,
+    ...spellFiles,
+  ];
   const classEntityFiles: ManifestFile[] = [];
   for (const fileName of readdirSync(classDirectory)
     .filter((fileName) => fileName.endsWith('.json'))
@@ -226,7 +277,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   }
 
   if (classEntityFiles.length === 0) throw new ManifestError(`No class entity files found in ${classDirectory}.`);
-  requireDomains(classEntityFiles, CATALOG_DOMAINS.slice(7), 'class');
+  requireDomains(classEntityFiles, ['class', 'subclass', 'classFeature', 'subclassFeature'], 'class');
 
   return {
     enabledDomains: CATALOG_DOMAINS,

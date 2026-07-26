@@ -15,6 +15,12 @@ function createFixtureRoot(): string {
   writeFileSync(join(root, 'data', 'feats.json'), '{ "feat": [] }');
   writeFileSync(join(root, 'data', 'optionalfeatures.json'), '{ "optionalfeature": [] }');
   writeFileSync(join(root, 'data', 'bastions.json'), '{ "facility": [] }');
+  writeFileSync(join(root, 'data', 'items.json'), '{ "item": [], "itemGroup": [] }');
+  writeFileSync(
+    join(root, 'data', 'items-base.json'),
+    '{ "baseitem": [], "itemProperty": [], "itemType": [], "itemTypeAdditionalEntries": [], "itemEntry": [], "itemMastery": [] }',
+  );
+  writeFileSync(join(root, 'data', 'vehicles.json'), '{ "vehicle": [], "vehicleUpgrade": [] }');
   writeFileSync(join(root, 'data', 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
   writeFileSync(join(root, 'data', 'spells', 'spells-fixture.json'), '{ "spell": [] }');
   writeFileSync(join(root, 'data', 'class', 'index.json'), '{}');
@@ -40,7 +46,7 @@ void describe('Validation CLI', () => {
     const valid = runValidationCli(root);
 
     assert.equal(valid.status, 0);
-    assert.match(valid.stdout, /Validation succeeded: 7 files across data\./);
+    assert.match(valid.stdout, /Validation succeeded: 10 files across data\./);
     assert.equal(valid.stderr, '');
 
     writeFileSync(

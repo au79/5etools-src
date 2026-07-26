@@ -22,6 +22,12 @@ function createFixtureRoot(): string {
   writeFileSync(join(root, 'data', 'feats.json'), '{ "feat": [] }');
   writeFileSync(join(root, 'data', 'optionalfeatures.json'), '{ "optionalfeature": [] }');
   writeFileSync(join(root, 'data', 'bastions.json'), '{ "facility": [] }');
+  writeFileSync(join(root, 'data', 'items.json'), '{ "item": [], "itemGroup": [] }');
+  writeFileSync(
+    join(root, 'data', 'items-base.json'),
+    '{ "baseitem": [], "itemProperty": [], "itemType": [], "itemTypeAdditionalEntries": [], "itemEntry": [], "itemMastery": [] }',
+  );
+  writeFileSync(join(root, 'data', 'vehicles.json'), '{ "vehicle": [], "vehicleUpgrade": [] }');
   writeFileSync(join(root, 'data', 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
   writeFileSync(join(root, 'data', 'spells', 'spells-fixture.json'), '{ "spell": [] }');
   writeFileSync(join(root, 'data', 'class', 'index.json'), '{}');
@@ -44,6 +50,9 @@ void describe('Phase 1 manifest', () => {
     assert.ok(manifest.files.some((file) => file.path === 'data/feats.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/optionalfeatures.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/bastions.json' && file.role === 'entity'));
+    assert.ok(manifest.files.some((file) => file.path === 'data/items.json' && file.role === 'entity'));
+    assert.ok(manifest.files.some((file) => file.path === 'data/items-base.json' && file.role === 'entity'));
+    assert.ok(manifest.files.some((file) => file.path === 'data/vehicles.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/spells/index.json' && file.role === 'catalog'));
     assert.ok(manifest.files.some((file) => file.path === 'data/spells/spells-phb.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/class/index.json' && file.role === 'catalog'));
@@ -149,6 +158,12 @@ void describe('Phase 1 manifest', () => {
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'feats.json'), '{ "feat": [] }');
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'optionalfeatures.json'), '{ "optionalfeature": [] }');
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'bastions.json'), '{ "facility": [] }');
+    writeFileSync(join(missingClassDirectoryRoot, 'data', 'items.json'), '{ "item": [], "itemGroup": [] }');
+    writeFileSync(
+      join(missingClassDirectoryRoot, 'data', 'items-base.json'),
+      '{ "baseitem": [], "itemProperty": [], "itemType": [], "itemTypeAdditionalEntries": [], "itemEntry": [], "itemMastery": [] }',
+    );
+    writeFileSync(join(missingClassDirectoryRoot, 'data', 'vehicles.json'), '{ "vehicle": [], "vehicleUpgrade": [] }');
     mkdirSync(join(missingClassDirectoryRoot, 'data', 'spells'));
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'spells', 'spells-fixture.json'), '{ "spell": [] }');

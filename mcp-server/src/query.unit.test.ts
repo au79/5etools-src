@@ -81,6 +81,35 @@ void describe('Catalog queries', () => {
     );
   });
 
+  void test('searches and safely retrieves every equipment domain', () => {
+    const catalog = getCatalog();
+    const records = [
+      ['item', 'Bag of Holding', 'DMG', 'item/bag%20of%20holding/dmg'],
+      ['itemGroup', 'Arcane Focus', 'PHB', 'itemgroup/arcane%20focus/phb'],
+      ['itemBase', 'Dagger', 'PHB', 'itembase/dagger/phb'],
+      ['itemType', 'Melee Weapon', 'PHB', 'itemtype/melee%20weapon/phb'],
+      ['itemTypeAdditionalEntries', 'Gaming Set', 'XGE', 'itemtypeadditionalentries/gaming%20set/xge'],
+      ['itemEntry', 'Absorbing Tattoo', 'TCE', 'itementry/absorbing%20tattoo/tce'],
+      ['itemMastery', 'Cleave', 'XPHB', 'itemmastery/cleave/xphb'],
+      ['vehicle', 'Apparatus of Kwalish', 'DMG', 'vehicle/apparatus%20of%20kwalish/dmg'],
+      ['vehicleUpgrade', 'Acidic Bile Sprayer', 'BGDIA', 'vehicleupgrade/acidic%20bile%20sprayer/bgdia'],
+    ] as const;
+
+    for (const [domain, name, source, id] of records) {
+      assert.equal(searchCatalog(catalog, { domain, query: name, source })[0]?.id, id);
+      assert.equal(getCatalogRecord(catalog, { domain, name, source })?.id, id);
+    }
+    assert.equal(
+      getCatalogRecord(catalog, { abbreviation: 'A', domain: 'itemProperty', source: 'PHB' })?.id,
+      'itemproperty/a/phb',
+    );
+    assert.ok(searchCatalog(catalog, { domain: 'itemProperty', query: 'a', source: 'PHB' }).length > 0);
+    assert.throws(
+      () => getCatalogRecord(catalog, { abbreviation: 'A', domain: 'itemProperty' }),
+      (error: unknown) => error instanceof QueryError && error.candidates.length > 1,
+    );
+  });
+
   void test('ranks exact and name matches ahead of incidental text matches', () => {
     const catalog = {
       records: [

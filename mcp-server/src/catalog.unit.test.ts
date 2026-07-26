@@ -16,6 +16,12 @@ function createFixtureRoot(): string {
   writeFileSync(join(root, 'data', 'feats.json'), '{ "feat": [] }');
   writeFileSync(join(root, 'data', 'optionalfeatures.json'), '{ "optionalfeature": [] }');
   writeFileSync(join(root, 'data', 'bastions.json'), '{ "facility": [] }');
+  writeFileSync(join(root, 'data', 'items.json'), '{ "item": [], "itemGroup": [] }');
+  writeFileSync(
+    join(root, 'data', 'items-base.json'),
+    '{ "baseitem": [], "itemProperty": [], "itemType": [], "itemTypeAdditionalEntries": [], "itemEntry": [], "itemMastery": [] }',
+  );
+  writeFileSync(join(root, 'data', 'vehicles.json'), '{ "vehicle": [], "vehicleUpgrade": [] }');
   writeFileSync(join(root, 'data', 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
   writeFileSync(join(root, 'data', 'spells', 'spells-fixture.json'), '{ "spell": [] }');
   writeFileSync(join(root, 'data', 'class', 'index.json'), '{}');
@@ -34,6 +40,12 @@ function createAlternateSourceRoot(root: string, name: string): void {
   writeFileSync(join(root, name, 'feats.json'), '{ "feat": [] }');
   writeFileSync(join(root, name, 'optionalfeatures.json'), '{ "optionalfeature": [] }');
   writeFileSync(join(root, name, 'bastions.json'), '{ "facility": [] }');
+  writeFileSync(join(root, name, 'items.json'), '{ "item": [], "itemGroup": [] }');
+  writeFileSync(
+    join(root, name, 'items-base.json'),
+    '{ "baseitem": [], "itemProperty": [], "itemType": [], "itemTypeAdditionalEntries": [], "itemEntry": [], "itemMastery": [] }',
+  );
+  writeFileSync(join(root, name, 'vehicles.json'), '{ "vehicle": [], "vehicleUpgrade": [] }');
   writeFileSync(join(root, name, 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
   writeFileSync(join(root, name, 'spells', 'spells-fixture.json'), '{ "spell": [] }');
   writeFileSync(join(root, name, 'class', 'index.json'), '{}');
@@ -87,6 +99,43 @@ void describe('Phase 1 catalog', () => {
     );
     assert.equal(acidSplash?.id, 'spell/acid%20splash/phb');
     assert.equal(acidSplash?.file, 'data/spells/spells-phb.json');
+
+    const equipment = [
+      ['item', 'Bag of Holding', 'DMG', 'item/bag%20of%20holding/dmg', 'data/items.json'],
+      ['itemGroup', 'Arcane Focus', 'PHB', 'itemgroup/arcane%20focus/phb', 'data/items.json'],
+      ['itemBase', 'Dagger', 'PHB', 'itembase/dagger/phb', 'data/items-base.json'],
+      ['itemType', 'Melee Weapon', 'PHB', 'itemtype/melee%20weapon/phb', 'data/items-base.json'],
+      [
+        'itemTypeAdditionalEntries',
+        'Gaming Set',
+        'XGE',
+        'itemtypeadditionalentries/gaming%20set/xge',
+        'data/items-base.json',
+      ],
+      ['itemEntry', 'Absorbing Tattoo', 'TCE', 'itementry/absorbing%20tattoo/tce', 'data/items-base.json'],
+      ['itemMastery', 'Cleave', 'XPHB', 'itemmastery/cleave/xphb', 'data/items-base.json'],
+      ['vehicle', 'Apparatus of Kwalish', 'DMG', 'vehicle/apparatus%20of%20kwalish/dmg', 'data/vehicles.json'],
+      [
+        'vehicleUpgrade',
+        'Acidic Bile Sprayer',
+        'BGDIA',
+        'vehicleupgrade/acidic%20bile%20sprayer/bgdia',
+        'data/vehicles.json',
+      ],
+    ] as const;
+    for (const [domain, name, source, id, file] of equipment) {
+      const record = catalog.records.find(
+        (candidate) => candidate.domain === domain && candidate.data.name === name && candidate.source === source,
+      );
+      assert.equal(record?.id, id);
+      assert.equal(record?.file, file);
+    }
+
+    const ammunition = catalog.records.find(
+      (record) => record.domain === 'itemProperty' && record.data.abbreviation === 'A' && record.source === 'PHB',
+    );
+    assert.equal(ammunition?.id, 'itemproperty/a/phb');
+    assert.equal(ammunition?.file, 'data/items-base.json');
   });
 
   void test('creates stable parent-aware record IDs', () => {
@@ -106,6 +155,8 @@ void describe('Phase 1 catalog', () => {
     );
     assert.equal(createRecordId('facility', { name: 'Ancient Altar', source: 'RHW' }), 'facility/ancient%20altar/rhw');
     assert.equal(createRecordId('spell', { name: 'Acid Splash', source: 'PHB' }), 'spell/acid%20splash/phb');
+    assert.equal(createRecordId('item', { name: 'Bag of Holding', source: 'DMG' }), 'item/bag%20of%20holding/dmg');
+    assert.equal(createRecordId('itemProperty', { abbreviation: 'A', source: 'PHB' }), 'itemproperty/a/phb');
     assert.equal(createRecordId('class', { name: 'Wizard', source: 'PHB' }), 'class/wizard/phb');
     assert.equal(
       createRecordId('subrace', { name: 'High Elf', raceName: 'Elf', raceSource: 'PHB', source: 'PHB' }),

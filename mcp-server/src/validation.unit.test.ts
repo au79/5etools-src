@@ -16,6 +16,7 @@ void describe('Phase 1 validation', () => {
     const feats = [{ entries: ['Always alert.'], name: 'Alert', source: 'PHB' }];
     const optionalFeatures = [{ featureType: ['EI'], name: 'Agonizing Blast', source: 'PHB' }];
     const facilities = [{ facilityType: 'special', level: 5, name: 'Ancient Altar', source: 'RHW' }];
+    const itemProperty = [{ abbreviation: 'A', source: 'PHB' }];
 
     assert.strictEqual(validateCollectionRecords('data/races.json', 'race', records), records);
     assert.strictEqual(validateCollectionRecords('data/backgrounds.json', 'background', backgrounds), backgrounds);
@@ -25,6 +26,22 @@ void describe('Phase 1 validation', () => {
       optionalFeatures,
     );
     assert.strictEqual(validateCollectionRecords('data/bastions.json', 'facility', facilities), facilities);
+    assert.strictEqual(validateCollectionRecords('data/items-base.json', 'itemProperty', itemProperty), itemProperty);
+    for (const collection of [
+      'item',
+      'itemGroup',
+      'itemBase',
+      'itemType',
+      'itemTypeAdditionalEntries',
+      'itemEntry',
+      'itemMastery',
+      'vehicle',
+      'vehicleUpgrade',
+    ] as const) {
+      assert.doesNotThrow(() =>
+        validateCollectionRecords('data/equipment.json', collection, [{ name: 'Fixture', source: 'TST' }]),
+      );
+    }
     assert.doesNotThrow(() =>
       validateCollectionRecords('data/bastions.json', 'facility', [
         { facilityType: 'basic', name: 'Bedroom', source: 'XDMG' },
@@ -140,6 +157,9 @@ void describe('Phase 1 validation', () => {
     assert.ok(result.files.includes('data/optionalfeatures.json'));
     assert.ok(result.files.includes('data/bastions.json'));
     assert.ok(result.files.includes('data/spells/spells-phb.json'));
+    assert.ok(result.files.includes('data/items.json'));
+    assert.ok(result.files.includes('data/items-base.json'));
+    assert.ok(result.files.includes('data/vehicles.json'));
     assert.ok(result.files.some((file) => file.startsWith('data/class/class-')));
   });
 });
