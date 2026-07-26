@@ -23,6 +23,7 @@ export const CATALOG_DOMAINS = [
   'feat',
   'optionalfeature',
   'facility',
+  'spell',
   'class',
   'subclass',
   'classFeature',
@@ -78,6 +79,7 @@ const BACKGROUND_COLLECTIONS = new Map<string, CatalogDomain>([['background', 'b
 const FEAT_COLLECTIONS = new Map<string, CatalogDomain>([['feat', 'feat']]);
 const OPTIONAL_FEATURE_COLLECTIONS = new Map<string, CatalogDomain>([['optionalfeature', 'optionalfeature']]);
 const BASTION_COLLECTIONS = new Map<string, CatalogDomain>([['facility', 'facility']]);
+const SPELL_COLLECTIONS = new Map<string, CatalogDomain>([['spell', 'spell']]);
 
 export const DEFAULT_SOURCE_ROOT = 'data';
 
@@ -149,6 +151,34 @@ function classifyClassCompanion(projectRoot: string, path: string, fileName: str
   return { collections: [], path: toManifestPath(projectRoot, path), role: 'presentation' };
 }
 
+function classifySpellFiles(projectRoot: string, sourcePath: string): readonly ManifestFile[] {
+  const spellDirectory = join(sourcePath, 'spells');
+  const spellIndexPath = join(spellDirectory, 'index.json');
+  if (!existsSync(spellDirectory) || !statSync(spellDirectory).isDirectory()) {
+    throw new ManifestError(`Required spell source directory is missing: ${spellDirectory}`);
+  }
+  requireFile(spellIndexPath, 'spell catalog');
+
+  const index = readObject(spellIndexPath);
+  const files = new Set<string>();
+  for (const [source, fileName] of Object.entries(index)) {
+    if (typeof fileName !== 'string' || !/^spells-[a-z0-9-]+\.json$/u.test(fileName)) {
+      throw new ManifestError(`Invalid spell catalog entry for ${JSON.stringify(source)} in ${spellIndexPath}.`);
+    }
+    files.add(fileName);
+  }
+  if (files.size === 0) throw new ManifestError(`No spell entity files found in ${spellIndexPath}.`);
+
+  const spellFiles = [...files].sort().map((fileName) => {
+    const path = join(spellDirectory, fileName);
+    requireFile(path, 'spell entity file');
+    return classifyEntityFile(projectRoot, path, SPELL_COLLECTIONS);
+  });
+  requireDomains(spellFiles, ['spell'], 'spell');
+
+  return [{ collections: [], path: toManifestPath(projectRoot, spellIndexPath), role: 'catalog' }, ...spellFiles];
+}
+
 export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_SOURCE_ROOT): CatalogManifest {
   const sourcePath = join(projectRoot, sourceRoot);
   const racesPath = join(sourcePath, 'races.json');
@@ -173,13 +203,14 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   const featFile = classifyEntityFile(projectRoot, featsPath, FEAT_COLLECTIONS);
   const optionalFeatureFile = classifyEntityFile(projectRoot, optionalFeaturesPath, OPTIONAL_FEATURE_COLLECTIONS);
   const bastionFile = classifyEntityFile(projectRoot, bastionsPath, BASTION_COLLECTIONS);
+  const spellFiles = classifySpellFiles(projectRoot, sourcePath);
   requireDomains([raceFile], ['race', 'subrace'], 'race');
   requireDomains([backgroundFile], ['background'], 'background');
   requireDomains([featFile], ['feat'], 'feat');
   requireDomains([optionalFeatureFile], ['optionalfeature'], 'optional feature');
   requireDomains([bastionFile], ['facility'], 'bastion');
 
-  const files: ManifestFile[] = [raceFile, backgroundFile, featFile, optionalFeatureFile, bastionFile];
+  const files: ManifestFile[] = [raceFile, backgroundFile, featFile, optionalFeatureFile, bastionFile, ...spellFiles];
   const classEntityFiles: ManifestFile[] = [];
   for (const fileName of readdirSync(classDirectory)
     .filter((fileName) => fileName.endsWith('.json'))
@@ -195,7 +226,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   }
 
   if (classEntityFiles.length === 0) throw new ManifestError(`No class entity files found in ${classDirectory}.`);
-  requireDomains(classEntityFiles, CATALOG_DOMAINS.slice(6), 'class');
+  requireDomains(classEntityFiles, CATALOG_DOMAINS.slice(7), 'class');
 
   return {
     enabledDomains: CATALOG_DOMAINS,

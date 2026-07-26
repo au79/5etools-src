@@ -10,11 +10,14 @@ import { CatalogError, createCatalog, createRecordId, getCatalogDiagnostics } fr
 function createFixtureRoot(): string {
   const root = mkdtempSync(join(tmpdir(), '5etools-mcp-catalog-'));
   mkdirSync(join(root, 'data', 'class'), { recursive: true });
+  mkdirSync(join(root, 'data', 'spells'), { recursive: true });
   writeFileSync(join(root, 'data', 'races.json'), '{ "race": [], "subrace": [] }');
   writeFileSync(join(root, 'data', 'backgrounds.json'), '{ "background": [] }');
   writeFileSync(join(root, 'data', 'feats.json'), '{ "feat": [] }');
   writeFileSync(join(root, 'data', 'optionalfeatures.json'), '{ "optionalfeature": [] }');
   writeFileSync(join(root, 'data', 'bastions.json'), '{ "facility": [] }');
+  writeFileSync(join(root, 'data', 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
+  writeFileSync(join(root, 'data', 'spells', 'spells-fixture.json'), '{ "spell": [] }');
   writeFileSync(join(root, 'data', 'class', 'index.json'), '{}');
   writeFileSync(
     join(root, 'data', 'class', 'class-fixture.json'),
@@ -25,11 +28,14 @@ function createFixtureRoot(): string {
 
 function createAlternateSourceRoot(root: string, name: string): void {
   mkdirSync(join(root, name, 'class'), { recursive: true });
+  mkdirSync(join(root, name, 'spells'), { recursive: true });
   writeFileSync(join(root, name, 'races.json'), '{ "race": [], "subrace": [] }');
   writeFileSync(join(root, name, 'backgrounds.json'), '{ "background": [] }');
   writeFileSync(join(root, name, 'feats.json'), '{ "feat": [] }');
   writeFileSync(join(root, name, 'optionalfeatures.json'), '{ "optionalfeature": [] }');
   writeFileSync(join(root, name, 'bastions.json'), '{ "facility": [] }');
+  writeFileSync(join(root, name, 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
+  writeFileSync(join(root, name, 'spells', 'spells-fixture.json'), '{ "spell": [] }');
   writeFileSync(join(root, name, 'class', 'index.json'), '{}');
   writeFileSync(
     join(root, name, 'class', 'class-fixture.json'),
@@ -75,6 +81,12 @@ void describe('Phase 1 catalog', () => {
     assert.equal(agonizingBlast?.file, 'data/optionalfeatures.json');
     assert.equal(ancientAltar?.id, 'facility/ancient%20altar/rhw');
     assert.equal(ancientAltar?.file, 'data/bastions.json');
+
+    const acidSplash = catalog.records.find(
+      (record) => record.domain === 'spell' && record.data.name === 'Acid Splash' && record.source === 'PHB',
+    );
+    assert.equal(acidSplash?.id, 'spell/acid%20splash/phb');
+    assert.equal(acidSplash?.file, 'data/spells/spells-phb.json');
   });
 
   void test('creates stable parent-aware record IDs', () => {
@@ -93,6 +105,7 @@ void describe('Phase 1 catalog', () => {
       'optionalfeature/agonizing%20blast/phb',
     );
     assert.equal(createRecordId('facility', { name: 'Ancient Altar', source: 'RHW' }), 'facility/ancient%20altar/rhw');
+    assert.equal(createRecordId('spell', { name: 'Acid Splash', source: 'PHB' }), 'spell/acid%20splash/phb');
     assert.equal(createRecordId('class', { name: 'Wizard', source: 'PHB' }), 'class/wizard/phb');
     assert.equal(
       createRecordId('subrace', { name: 'High Elf', raceName: 'Elf', raceSource: 'PHB', source: 'PHB' }),

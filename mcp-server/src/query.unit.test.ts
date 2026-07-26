@@ -48,11 +48,13 @@ void describe('Catalog queries', () => {
       source: 'PHB',
     });
     const facilities = searchCatalog(catalog, { domain: 'facility', query: 'ancient altar', source: 'RHW' });
+    const spells = searchCatalog(catalog, { domain: 'spell', query: 'acid splash', source: 'PHB' });
 
     assert.equal(backgrounds[0]?.id, 'background/acolyte/phb');
     assert.equal(feats[0]?.id, 'feat/alert/phb');
     assert.equal(optionalFeatures[0]?.id, 'optionalfeature/agonizing%20blast/phb');
     assert.equal(facilities[0]?.id, 'facility/ancient%20altar/rhw');
+    assert.equal(spells[0]?.id, 'spell/acid%20splash/phb');
   });
 
   void test('keeps duplicate player-option names ambiguous without a source', () => {
@@ -64,6 +66,18 @@ void describe('Catalog queries', () => {
         error instanceof QueryError &&
         error.candidates.some((candidate) => candidate.id === 'optionalfeature/agonizing%20blast/phb') &&
         error.candidates.some((candidate) => candidate.id === 'optionalfeature/agonizing%20blast/xphb'),
+    );
+  });
+
+  void test('keeps duplicate spell names ambiguous without a source', () => {
+    const catalog = getCatalog();
+
+    assert.throws(
+      () => getCatalogRecord(catalog, { domain: 'spell', name: 'Blade of Disaster' }),
+      (error: unknown) =>
+        error instanceof QueryError &&
+        error.candidates.some((candidate) => candidate.id === 'spell/blade%20of%20disaster/frhof') &&
+        error.candidates.some((candidate) => candidate.id === 'spell/blade%20of%20disaster/tce'),
     );
   });
 

@@ -16,11 +16,14 @@ import {
 function createFixtureRoot(): string {
   const root = mkdtempSync(join(tmpdir(), '5etools-mcp-manifest-'));
   mkdirSync(join(root, 'data', 'class'), { recursive: true });
+  mkdirSync(join(root, 'data', 'spells'), { recursive: true });
   writeFileSync(join(root, 'data', 'races.json'), '{ "race": [], "subrace": [] }');
   writeFileSync(join(root, 'data', 'backgrounds.json'), '{ "background": [] }');
   writeFileSync(join(root, 'data', 'feats.json'), '{ "feat": [] }');
   writeFileSync(join(root, 'data', 'optionalfeatures.json'), '{ "optionalfeature": [] }');
   writeFileSync(join(root, 'data', 'bastions.json'), '{ "facility": [] }');
+  writeFileSync(join(root, 'data', 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
+  writeFileSync(join(root, 'data', 'spells', 'spells-fixture.json'), '{ "spell": [] }');
   writeFileSync(join(root, 'data', 'class', 'index.json'), '{}');
   writeFileSync(
     join(root, 'data', 'class', 'class-fixture.json'),
@@ -41,6 +44,8 @@ void describe('Phase 1 manifest', () => {
     assert.ok(manifest.files.some((file) => file.path === 'data/feats.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/optionalfeatures.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/bastions.json' && file.role === 'entity'));
+    assert.ok(manifest.files.some((file) => file.path === 'data/spells/index.json' && file.role === 'catalog'));
+    assert.ok(manifest.files.some((file) => file.path === 'data/spells/spells-phb.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/class/index.json' && file.role === 'catalog'));
   });
 
@@ -102,6 +107,41 @@ void describe('Phase 1 manifest', () => {
       (error: unknown) => error instanceof ManifestError && error.message.includes('bastion source file'),
     );
 
+    const missingSpellDirectoryRoot = createFixtureRoot();
+    rmSync(join(missingSpellDirectoryRoot, 'data', 'spells'), { force: true, recursive: true });
+    assert.throws(
+      () => createCatalogManifest(missingSpellDirectoryRoot),
+      (error: unknown) => error instanceof ManifestError && error.message.includes('spell source directory'),
+    );
+
+    const missingSpellIndexRoot = createFixtureRoot();
+    rmSync(join(missingSpellIndexRoot, 'data', 'spells', 'index.json'));
+    assert.throws(
+      () => createCatalogManifest(missingSpellIndexRoot),
+      (error: unknown) => error instanceof ManifestError && error.message.includes('spell catalog'),
+    );
+
+    const invalidSpellIndexRoot = createFixtureRoot();
+    writeFileSync(join(invalidSpellIndexRoot, 'data', 'spells', 'index.json'), '{ "PHB": "fluff-spells-phb.json" }');
+    assert.throws(
+      () => createCatalogManifest(invalidSpellIndexRoot),
+      (error: unknown) => error instanceof ManifestError && error.message.includes('Invalid spell catalog entry'),
+    );
+
+    const emptySpellIndexRoot = createFixtureRoot();
+    writeFileSync(join(emptySpellIndexRoot, 'data', 'spells', 'index.json'), '{}');
+    assert.throws(
+      () => createCatalogManifest(emptySpellIndexRoot),
+      (error: unknown) => error instanceof ManifestError && error.message.includes('No spell entity files'),
+    );
+
+    const missingSpellEntityRoot = createFixtureRoot();
+    rmSync(join(missingSpellEntityRoot, 'data', 'spells', 'spells-fixture.json'));
+    assert.throws(
+      () => createCatalogManifest(missingSpellEntityRoot),
+      (error: unknown) => error instanceof ManifestError && error.message.includes('spell entity file'),
+    );
+
     const missingClassDirectoryRoot = mkdtempSync(join(tmpdir(), '5etools-mcp-manifest-no-class-directory-'));
     mkdirSync(join(missingClassDirectoryRoot, 'data'));
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'races.json'), '{ "race": [], "subrace": [] }');
@@ -109,6 +149,9 @@ void describe('Phase 1 manifest', () => {
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'feats.json'), '{ "feat": [] }');
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'optionalfeatures.json'), '{ "optionalfeature": [] }');
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'bastions.json'), '{ "facility": [] }');
+    mkdirSync(join(missingClassDirectoryRoot, 'data', 'spells'));
+    writeFileSync(join(missingClassDirectoryRoot, 'data', 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
+    writeFileSync(join(missingClassDirectoryRoot, 'data', 'spells', 'spells-fixture.json'), '{ "spell": [] }');
     assert.throws(
       () => createCatalogManifest(missingClassDirectoryRoot),
       (error: unknown) => error instanceof ManifestError && error.message.includes('class source directory'),

@@ -31,6 +31,11 @@ void describe('Phase 1 validation', () => {
       ]),
     );
     assert.doesNotThrow(() =>
+      validateCollectionRecords('data/spells/spells-phb.json', 'spell', [
+        { entries: [{ by: 'A wizard', entries: ['Magic has a price.'], type: 'quote' }], name: 'Quote', source: 'TST' },
+      ]),
+    );
+    assert.doesNotThrow(() =>
       validateCollectionRecords('data/backgrounds.json', 'background', [
         {
           entries: [{ entries: ['A table follows.'], id: 'table-1', name: 'Details', type: 'section' }],
@@ -134,6 +139,7 @@ void describe('Phase 1 validation', () => {
     assert.ok(result.files.includes('data/feats.json'));
     assert.ok(result.files.includes('data/optionalfeatures.json'));
     assert.ok(result.files.includes('data/bastions.json'));
+    assert.ok(result.files.includes('data/spells/spells-phb.json'));
     assert.ok(result.files.some((file) => file.startsWith('data/class/class-')));
   });
 });

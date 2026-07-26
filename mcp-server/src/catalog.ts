@@ -77,6 +77,7 @@ export function createRecordId(domain: CatalogCollection, record: RawRecord): st
     case 'feat':
     case 'optionalfeature':
     case 'facility':
+    case 'spell':
     case 'class':
       parts = [domain, requireIdentityPart(record, 'name'), source];
       break;

@@ -12,9 +12,9 @@ serving requests, and advertises three read-only tools:
 
 - `server_metadata` returns package identity, the running Git commit, and dirty-working-tree state.
 - `search` searches raw validated `race`, `subrace`, `background`, `feat`, `optionalfeature`, `facility`, `class`,
-  `subclass`, `classFeature`, and `subclassFeature` records. It accepts a required `query`, plus optional `domain`,
-  `source`, `sourceRoot`, and a `limit` from 1 through 100 (20 by default). `facility` is the upstream collection name
-  for records stored in `bastions.json`.
+  `subclass`, `classFeature`, `subclassFeature`, and `spell` records. It accepts a required `query`, plus optional
+  `domain`, `source`, `sourceRoot`, and a `limit` from 1 through 100 (20 by default). `facility` is the upstream
+  collection name for records stored in `bastions.json`.
 - `get` retrieves one raw provenance envelope by stable `id`, or by exact `domain` and `name` with optional `source`
   and `sourceRoot` filters. Ambiguous exact requests return safe disambiguation candidates instead of selecting one.
 
@@ -25,7 +25,8 @@ across roots fails startup rather than merging records silently. Adventures are 
 
 Representative raw-record requests are `search({"domain":"background","query":"acolyte"})`,
 `search({"domain":"feat","query":"alert"})`, `search({"domain":"optionalfeature","query":"agonizing blast"})`,
-and `get({"id":"facility/ancient%20altar/rhw"})`. Tagged text remains unchanged inside each result's `data` payload.
+`get({"id":"facility/ancient%20altar/rhw"})`, and `get({"id":"spell/acid%20splash/phb"})`. Tagged text remains
+unchanged inside each result's `data` payload.
 
 ## Resume here: OpenAI ChatGPT
 

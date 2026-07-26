@@ -89,6 +89,17 @@ void describe('MCP stdio transport', () => {
       if (!isTextContent(facilityContent)) throw new Error('The facility get tool did not return text content');
       assert.equal((JSON.parse(facilityContent.text) as { readonly id?: unknown }).id, 'facility/ancient%20altar/rhw');
 
+      const spellSearch = await client.callTool({
+        arguments: { domain: 'spell', query: 'acid splash' },
+        name: SEARCH_TOOL,
+      });
+      const spellContent = getFirstContent(spellSearch.content);
+      if (!isTextContent(spellContent)) throw new Error('The spell search tool did not return text content');
+      assert.equal(
+        (JSON.parse(spellContent.text) as readonly { readonly id?: unknown }[])[0]?.id,
+        'spell/acid%20splash/phb',
+      );
+
       const get = await client.callTool({ arguments: { id: 'race/human/phb' }, name: GET_TOOL });
       const getContent = getFirstContent(get.content);
       if (!isTextContent(getContent)) throw new Error('The get tool did not return text content');
