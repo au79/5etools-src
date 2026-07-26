@@ -16,6 +16,7 @@ function createFixtureRoot(): string {
   writeFileSync(join(root, 'data', 'optionalfeatures.json'), '{ "optionalfeature": [] }');
   writeFileSync(join(root, 'data', 'bastions.json'), '{ "facility": [] }');
   writeFileSync(join(root, 'data', 'actions.json'), '{ "action": [] }');
+  writeFileSync(join(root, 'data', 'conditionsdiseases.json'), '{ "condition": [], "disease": [], "status": [] }');
   writeFileSync(join(root, 'data', 'items.json'), '{ "item": [], "itemGroup": [] }');
   writeFileSync(
     join(root, 'data', 'items-base.json'),
@@ -41,6 +42,7 @@ function addSourceRoot(root: string, name: string): void {
   writeFileSync(join(root, name, 'optionalfeatures.json'), '{ "optionalfeature": [] }');
   writeFileSync(join(root, name, 'bastions.json'), '{ "facility": [] }');
   writeFileSync(join(root, name, 'actions.json'), '{ "action": [] }');
+  writeFileSync(join(root, name, 'conditionsdiseases.json'), '{ "condition": [], "disease": [], "status": [] }');
   writeFileSync(join(root, name, 'items.json'), '{ "item": [], "itemGroup": [] }');
   writeFileSync(
     join(root, name, 'items-base.json'),

@@ -25,6 +25,9 @@ export const CATALOG_DOMAINS = [
   'facility',
   'spell',
   'action',
+  'condition',
+  'disease',
+  'status',
   'item',
   'itemGroup',
   'itemBase',
@@ -92,6 +95,11 @@ const OPTIONAL_FEATURE_COLLECTIONS = new Map<string, CatalogDomain>([['optionalf
 const BASTION_COLLECTIONS = new Map<string, CatalogDomain>([['facility', 'facility']]);
 const SPELL_COLLECTIONS = new Map<string, CatalogDomain>([['spell', 'spell']]);
 const ACTION_COLLECTIONS = new Map<string, CatalogDomain>([['action', 'action']]);
+const CONDITION_DISEASE_COLLECTIONS = new Map<string, CatalogDomain>([
+  ['condition', 'condition'],
+  ['disease', 'disease'],
+  ['status', 'status'],
+]);
 const ITEM_COLLECTIONS = new Map<string, CatalogDomain>([
   ['item', 'item'],
   ['itemGroup', 'itemGroup'],
@@ -214,6 +222,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   const optionalFeaturesPath = join(sourcePath, 'optionalfeatures.json');
   const bastionsPath = join(sourcePath, 'bastions.json');
   const actionsPath = join(sourcePath, 'actions.json');
+  const conditionsDiseasesPath = join(sourcePath, 'conditionsdiseases.json');
   const itemsPath = join(sourcePath, 'items.json');
   const itemBasesPath = join(sourcePath, 'items-base.json');
   const vehiclesPath = join(sourcePath, 'vehicles.json');
@@ -225,6 +234,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   requireFile(optionalFeaturesPath, 'optional feature source file');
   requireFile(bastionsPath, 'bastion source file');
   requireFile(actionsPath, 'action source file');
+  requireFile(conditionsDiseasesPath, 'condition and disease source file');
   requireFile(itemsPath, 'item source file');
   requireFile(itemBasesPath, 'base item source file');
   requireFile(vehiclesPath, 'vehicle source file');
@@ -239,6 +249,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   const optionalFeatureFile = classifyEntityFile(projectRoot, optionalFeaturesPath, OPTIONAL_FEATURE_COLLECTIONS);
   const bastionFile = classifyEntityFile(projectRoot, bastionsPath, BASTION_COLLECTIONS);
   const actionFile = classifyEntityFile(projectRoot, actionsPath, ACTION_COLLECTIONS);
+  const conditionDiseaseFile = classifyEntityFile(projectRoot, conditionsDiseasesPath, CONDITION_DISEASE_COLLECTIONS);
   const itemFile = classifyEntityFile(projectRoot, itemsPath, ITEM_COLLECTIONS);
   const itemBaseFile = classifyEntityFile(projectRoot, itemBasesPath, ITEM_BASE_COLLECTIONS);
   const vehicleFile = classifyEntityFile(projectRoot, vehiclesPath, VEHICLE_COLLECTIONS);
@@ -249,6 +260,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   requireDomains([optionalFeatureFile], ['optionalfeature'], 'optional feature');
   requireDomains([bastionFile], ['facility'], 'bastion');
   requireDomains([actionFile], ['action'], 'action');
+  requireDomains([conditionDiseaseFile], ['condition', 'disease', 'status'], 'condition and disease');
   requireDomains([itemFile], ['item', 'itemGroup'], 'item');
   requireDomains(
     [itemBaseFile],
@@ -264,6 +276,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
     optionalFeatureFile,
     bastionFile,
     actionFile,
+    conditionDiseaseFile,
     itemFile,
     itemBaseFile,
     vehicleFile,
