@@ -1,5 +1,6 @@
 desktop.ini
 node_modules
+.pnpm-store/
 img
 
 # IntelliJ project files
