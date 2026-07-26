@@ -19,23 +19,34 @@ These notes are intentionally lighter than full ADRs. Update the relevant note w
 
 ### Phase 1: Architecture and compatibility decisions
 
-Confirm the supported MCP SDK/transport, Node version policy, latest reasonable TypeScript toolchain (`typescript@6.0.3`, selected for compatibility with the current TypeScript-aware ESLint stack), package-local PNPM workflow (pinned version and lockfile; the enclosing app keeps npm), approved formatting/linting/type-checking rules, ChatGPT launch configuration, data-root configuration, edition/source semantics, default source scope, versioned domain manifest, strict schema behavior, observability approach (`pino@10.3.1` with optional `pino-pretty@13.1.3`), and adventure safety controls. Prioritize the integration gate before the data catalog: the server must complete MCP initialization, answer standard `ping`, advertise its diagnostic tool, and return package version plus the running git commit hash before data loading work proceeds. The decisions captured above are the working Phase 1 baseline.
+Status: complete. The package boundary, SDK/transport, Node/toolchain policy, configuration, strict schemas,
+observability, and adventure-safety decisions are recorded above. The transport integration gate completed before data
+loading, including MCP initialization, `ping`, diagnostic metadata, and running-commit reporting.
 
 ### Phase 2: Read-only catalog and lookup core
 
-Implement the TypeScript catalog, rollout-group schema validation, lazy data access, stable identifiers, provenance envelopes, source-aware filtering, bounded search, exact lookup, ambiguity handling, and predictable errors. Keep this layer independently testable without an MCP client.
+Status: complete for the races/classes rollout. The TypeScript catalog validates enabled standard source roots, retains
+provenance envelopes, supports source-aware bounded search and exact lookup, and rejects ambiguity and unsafe errors
+predictably. The query layer remains independently testable without an MCP client.
 
 ### Phase 3: MCP adapter and steel thread
 
-The transport-only integration gate is delivered first, independently of the data catalog. Then run OpenAI's external `tunnel-client` beside the local server to make that shell reachable from ChatGPT through Secure MCP Tunnel, while retaining local `stdio` for development and automated tests. Provide a consumer-oriented quickstart in `mcp-server/README.md` and link it to one canonical Markdown ChatGPT/tunnel runbook. The runbook should be human-readable and AI-consumable: stable headings, explicit prerequisites, named variables, copy/paste commands, expected results, verification checkpoints, safe secret handling, and troubleshooting branches. Expose the validated races/classes surface with raw `search` and `get` operations. Add the automated protocol tests and documented manual ChatGPT smoke test. Keep stdout protocol-only and route observability to stderr or another explicitly safe sink.
+Status: complete. The local `stdio` server exposes `server_metadata`, raw `search`, and exact `get`; automated protocol
+tests and a live Secure MCP Tunnel check cover the steel thread. The consumer README and canonical tunnel runbook cover
+safe setup, verification, and recovery. Stdout remains protocol-only and observability is routed to stderr.
 
 ### Phase 4: Validation, refresh workflow, and client documentation
 
-Add the standalone validation command, grouped rollout checks, local launch/configuration documentation, refresh instructions, provenance examples, and representative usage examples. Verify that compatible upstream additions are discovered and incompatible shape changes fail clearly.
+Status: complete for the races/classes rollout. `pnpm run validate:data` shares startup configuration and validates
+selected source roots without starting MCP. The package documentation covers configuration, validation, provenance,
+representative queries, and tunnel operation; compatible additions are discovered and incompatible shapes fail clearly.
 
 ### Phase 5: Grouped expansion and optional enrichment
 
-Expand through player-facing groups first, then DM-facing groups. Only after the read-only surface is reliable, consider tagged-text rendering, rules cross-references, encounter/character helpers, and the adventure allowlist helper. Derived conveniences should link back to source entries.
+Status: pending. Expand through player-facing groups first, then DM-facing groups. Only after the read-only surface is
+reliable, consider tagged-text rendering, rules cross-references, encounter/character helpers, and the adventure
+allowlist helper. Derived conveniences should link back to source entries. Near the end of this work, make an editorial
+pass over the repository documentation and plans to remove obsolete references to delivery phases.
 
 ## Risks and decisions for the detailed plan
 
