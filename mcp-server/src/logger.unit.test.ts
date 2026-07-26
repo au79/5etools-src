@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { PassThrough } from 'node:stream';
 import test from 'node:test';
 
-import { createLogger, isPrettyLoggingEnabled } from './logger.js';
+import { createLogger } from './logger.js';
 
 void test('writes JSON logs to the configured stderr sink', async () => {
   const stderr = new PassThrough();
@@ -35,8 +35,6 @@ void test('creates a pretty logger when requested', () => {
   assert.doesNotThrow(() => createLogger({ pretty: true }));
 });
 
-void test('enables pretty logging only for the explicit development toggle', () => {
-  assert.equal(isPrettyLoggingEnabled({ MCP_LOG_PRETTY: 'true' }), true);
-  assert.equal(isPrettyLoggingEnabled({ MCP_LOG_PRETTY: '1' }), false);
-  assert.equal(isPrettyLoggingEnabled({}), false);
+void test('uses the requested log level', () => {
+  assert.equal(createLogger({ level: 'error' }).level, 'error');
 });

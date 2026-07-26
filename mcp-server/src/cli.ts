@@ -1,9 +1,12 @@
-import { createLogger, isPrettyLoggingEnabled } from './logger.js';
+import { resolveConfiguration } from './config.js';
+import { createLogger } from './logger.js';
 import { startStdioServer } from './server.js';
 
-const logger = createLogger({ pretty: isPrettyLoggingEnabled() });
+let logger = createLogger();
 
 async function main(): Promise<void> {
+  const configuration = resolveConfiguration();
+  logger = createLogger({ level: configuration.log.level, pretty: configuration.log.pretty });
   await startStdioServer({ logger });
 }
 

@@ -1,0 +1,20 @@
+{
+  // This file is optional. CLI options override environment variables, which override this file.
+  // Relative paths are resolved from this file's directory.
+
+  // "root": "/absolute/path/to/5etools-src",
+
+  // Enable only the source roots required for the current task. The default is ["data"].
+  // "sources": ["data"],
+
+  // Adventures stay disabled unless explicitly enabled. Allowlist mode requires sourceIds.
+  // "adventures": { "mode": "disabled" },
+  // "adventures": { "mode": "allowlist", "sourceIds": ["LMoP"] },
+  // "adventures": { "mode": "all" },
+
+  // Pretty logs are for local interactive use. Keep them false for stdio clients.
+  // "log": { "level": "info", "pretty": false },
+
+  // Phase 1 validates these collections.
+  // "validationRollout": ["races", "classes"]
+}

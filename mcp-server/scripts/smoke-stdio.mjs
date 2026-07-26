@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 const cliPath = fileURLToPath(new URL('../dist/src/cli.js', import.meta.url));
 const packageRoot = fileURLToPath(new URL('../', import.meta.url));
 const environment = Object.fromEntries(Object.entries(process.env).filter(([, value]) => value !== undefined));
-environment.MCP_LOG_PRETTY = 'true';
+environment.MCP_5ETOOLS_LOG_PRETTY = 'true';
 
 function getTextContent(content) {
   const firstContent = Array.isArray(content) ? content[0] : undefined;

@@ -1,12 +1,9 @@
-import pino, { type Logger } from 'pino';
+import pino, { type LevelWithSilentOrString, type Logger } from 'pino';
 
 export interface LoggerOptions {
   readonly pretty?: boolean;
   readonly destination?: NodeJS.WritableStream;
-}
-
-export function isPrettyLoggingEnabled(environment: NodeJS.ProcessEnv = process.env): boolean {
-  return environment.MCP_LOG_PRETTY === 'true';
+  readonly level?: LevelWithSilentOrString;
 }
 
 export function createLogger(options: LoggerOptions = {}): Logger {
@@ -14,7 +11,7 @@ export function createLogger(options: LoggerOptions = {}): Logger {
 
   if (options.pretty) {
     return pino(
-      { level: 'info' },
+      { level: options.level ?? 'info' },
       pino.transport({
         target: 'pino-pretty',
         options: {
@@ -25,5 +22,5 @@ export function createLogger(options: LoggerOptions = {}): Logger {
     );
   }
 
-  return pino({ level: 'info' }, destination);
+  return pino({ level: options.level ?? 'info' }, destination);
 }

@@ -69,10 +69,10 @@ handling to `process.exitCode`.
 The server writes logs only to stderr. MCP `stdio` protocol traffic remains on stdout. The package does not load D&D
 data, prerelease, homebrew, or adventure content in this integration phase.
 
-For human-readable local development logs, set `MCP_LOG_PRETTY=true` when launching the server directly:
+For human-readable local development logs, set `MCP_5ETOOLS_LOG_PRETTY=true` when launching the server directly:
 
 ```bash
-MCP_LOG_PRETTY=true pnpm start
+MCP_5ETOOLS_LOG_PRETTY=true pnpm start
 ```
 
 For a reproducible local smoke test with pretty server logs forwarded to the terminal, run:
