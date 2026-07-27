@@ -124,6 +124,14 @@ void describe('MCP stdio transport', () => {
       if (!isTextContent(languageContent)) throw new Error('The language get tool did not return text content');
       assert.equal((JSON.parse(languageContent.text) as { readonly id?: unknown }).id, 'language/common/phb');
 
+      const object = await client.callTool({
+        arguments: { domain: 'object', name: 'Ballista', source: 'DMG' },
+        name: GET_TOOL,
+      });
+      const objectContent = getFirstContent(object.content);
+      if (!isTextContent(objectContent)) throw new Error('The object get tool did not return text content');
+      assert.equal((JSON.parse(objectContent.text) as { readonly id?: unknown }).id, 'object/ballista/dmg');
+
       const equipmentGets = [
         [{ domain: 'item', name: 'Bag of Holding', source: 'DMG' }, 'item/bag%20of%20holding/dmg'],
         [{ domain: 'itemGroup', name: 'Arcane Focus', source: 'PHB' }, 'itemgroup/arcane%20focus/phb'],

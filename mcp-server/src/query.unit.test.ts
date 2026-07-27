@@ -131,6 +131,19 @@ void describe('Catalog queries', () => {
     assert.throws(() => getCatalogRecord(catalog, { domain: 'language', name: 'Common' }), QueryError);
   });
 
+  void test('searches objects and keeps duplicate names ambiguous', () => {
+    const catalog = getCatalog();
+    assert.equal(
+      searchCatalog(catalog, { domain: 'object', query: 'ballista', source: 'DMG' })[0]?.id,
+      'object/ballista/dmg',
+    );
+    assert.equal(
+      getCatalogRecord(catalog, { domain: 'object', name: 'Ballista', source: 'DMG' })?.id,
+      'object/ballista/dmg',
+    );
+    assert.throws(() => getCatalogRecord(catalog, { domain: 'object', name: 'Ballista' }), QueryError);
+  });
+
   void test('searches and safely retrieves every equipment domain', () => {
     const catalog = getCatalog();
     const records = [

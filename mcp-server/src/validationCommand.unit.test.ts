@@ -18,6 +18,7 @@ function createFixtureRoot(): string {
   writeFileSync(join(root, 'data', 'actions.json'), '{ "action": [] }');
   writeFileSync(join(root, 'data', 'conditionsdiseases.json'), '{ "condition": [], "disease": [], "status": [] }');
   writeFileSync(join(root, 'data', 'languages.json'), '{ "language": [], "languageScript": [] }');
+  writeFileSync(join(root, 'data', 'objects.json'), '{ "object": [] }');
   writeFileSync(join(root, 'data', 'items.json'), '{ "item": [], "itemGroup": [] }');
   writeFileSync(
     join(root, 'data', 'items-base.json'),
@@ -45,6 +46,7 @@ function addSourceRoot(root: string, name: string): void {
   writeFileSync(join(root, name, 'actions.json'), '{ "action": [] }');
   writeFileSync(join(root, name, 'conditionsdiseases.json'), '{ "condition": [], "disease": [], "status": [] }');
   writeFileSync(join(root, name, 'languages.json'), '{ "language": [], "languageScript": [] }');
+  writeFileSync(join(root, name, 'objects.json'), '{ "object": [] }');
   writeFileSync(join(root, name, 'items.json'), '{ "item": [], "itemGroup": [] }');
   writeFileSync(
     join(root, name, 'items-base.json'),
@@ -66,8 +68,8 @@ void describe('Validation command', () => {
     const result = runValidationCommand({ defaultProjectRoot: root, environment: {}, workingDirectory: root });
 
     assert.equal(result.results.length, 1);
-    assert.equal(result.results[0]?.files.length, 13);
-    assert.equal(formatValidationSummary(result), 'Validation succeeded: 13 files across data.');
+    assert.equal(result.results[0]?.files.length, 14);
+    assert.equal(formatValidationSummary(result), 'Validation succeeded: 14 files across data.');
   });
 
   void test('uses the same source precedence as server startup', () => {
