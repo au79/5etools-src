@@ -337,6 +337,15 @@ void describe('Phase 1 catalog', () => {
     assert.equal(elf.sourceRoot, 'homebrew');
     assert.equal(elf.file, 'homebrew/races.json');
     assert.ok(catalog.manifest.files.some((file) => file.path === 'homebrew/races.json'));
+
+    const metadataPolicyCatalog = createCatalog(root, [{ name: 'homebrew', path: join(root, 'homebrew') }], {
+      mode: 'all',
+      sourceIds: [],
+    });
+    assert.equal(
+      metadataPolicyCatalog.records.some((record) => record.domain === 'adventure'),
+      false,
+    );
   });
 
   void test('requires at least one source root', () => {
@@ -353,5 +362,25 @@ void describe('Phase 1 catalog', () => {
     assert.ok(diagnostics.fileCount > 1);
     assert.ok(diagnostics.recordCount > 2_000);
     assert.deepEqual(diagnostics.sourceRoots, ['data']);
+  });
+
+  void test('keeps adventure and book metadata disabled until explicitly enabled', () => {
+    const projectRoot = fileURLToPath(new URL('../../..', import.meta.url));
+    assert.equal(
+      createCatalog(projectRoot).records.some((record) => record.domain === 'adventure'),
+      false,
+    );
+
+    const allowlisted = createCatalog(projectRoot, undefined, { mode: 'allowlist', sourceIds: ['LMoP'] });
+    const adventure = allowlisted.records.find((record) => record.domain === 'adventure');
+    assert.equal(adventure?.id, 'adventure/lost%20mine%20of%20phandelver/lmop');
+    assert.equal(adventure?.data.contents, undefined);
+    assert.equal(
+      allowlisted.records.some((record) => record.domain === 'book'),
+      false,
+    );
+
+    const allMetadata = createCatalog(projectRoot, undefined, { mode: 'all', sourceIds: [] });
+    assert.ok(allMetadata.records.some((record) => record.domain === 'book' && record.source === 'PHB'));
   });
 });

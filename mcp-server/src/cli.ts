@@ -26,7 +26,7 @@ async function main(): Promise<void> {
     complete: (result) => ({ recordCount: result.records.length }),
     event: 'catalog.build',
     fields: { sourceRoots: configuration.sourceRoots.map((sourceRoot) => sourceRoot.name) },
-    action: () => createCatalog(configuration.projectRoot, configuration.sourceRoots),
+    action: () => createCatalog(configuration.projectRoot, configuration.sourceRoots, configuration.adventure),
   });
   await startStdioServer({
     catalog,

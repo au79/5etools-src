@@ -27,6 +27,8 @@ export const CATALOG_COLLECTIONS = [
   'monster',
   'monsterTemplate',
   'legendaryGroupTemplate',
+  'adventure',
+  'book',
   'encounter',
   'lootIndividual',
   'lootHoard',
@@ -583,6 +585,8 @@ const COLLECTION_FIELDS: Readonly<Record<CatalogCollection, readonly string[]>> 
   ],
   monsterTemplate: ['_copy', 'alias', 'apply', 'crMin', 'name', 'page', 'prerequisite', 'ref', 'source'],
   legendaryGroupTemplate: ['apply', 'name', 'page', 'ref', 'source'],
+  adventure: ['author', 'group', 'id', 'level', 'name', 'published', 'source', 'storyline'],
+  book: ['author', 'group', 'id', 'name', 'published', 'source'],
   encounter: ['name', 'page', 'source', 'tables'],
   lootIndividual: ['crMax', 'crMin', 'name', 'page', 'source', 'table'],
   lootHoard: ['coins', 'crMax', 'crMin', 'name', 'page', 'source', 'table'],
@@ -992,6 +996,8 @@ function getFieldSchema(collection: CatalogCollection, field: string): ZodType<u
   if (REQUIRED_STRING_FIELDS.has(field)) return z.string();
   if (field === 'raceName' || field === 'raceSource') return z.string().optional();
   if (field === 'level') {
+    if (collection === 'adventure')
+      return z.object({ end: z.number().optional(), start: z.number().optional() }).strict().optional();
     return collection === 'classFeature' || collection === 'subclassFeature' ? z.number() : z.number().optional();
   }
   if (NUMBER_FIELDS.has(field)) return z.number().optional();

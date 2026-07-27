@@ -38,6 +38,8 @@ export const CATALOG_DOMAINS = [
   'monster',
   'monsterTemplate',
   'legendaryGroupTemplate',
+  'adventure',
+  'book',
   'encounter',
   'lootIndividual',
   'lootHoard',
@@ -134,6 +136,8 @@ const MONSTER_TEMPLATE_COLLECTIONS = new Map<string, CatalogDomain>([
   ['monsterTemplate', 'monsterTemplate'],
   ['legendaryGroupTemplate', 'legendaryGroupTemplate'],
 ]);
+const ADVENTURE_COLLECTIONS = new Map<string, CatalogDomain>([['adventure', 'adventure']]);
+const BOOK_COLLECTIONS = new Map<string, CatalogDomain>([['book', 'book']]);
 const ENCOUNTER_COLLECTIONS = new Map<string, CatalogDomain>([['encounter', 'encounter']]);
 const LOOT_COLLECTIONS = new Map<string, CatalogDomain>([
   ['individual', 'lootIndividual'],
@@ -286,7 +290,11 @@ function classifyBestiaryFiles(projectRoot: string, sourcePath: string): readonl
   return [{ collections: [], path: toManifestPath(projectRoot, bestiaryIndexPath), role: 'catalog' }, ...bestiaryFiles];
 }
 
-export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_SOURCE_ROOT): CatalogManifest {
+export function createCatalogManifest(
+  projectRoot: string,
+  sourceRoot = DEFAULT_SOURCE_ROOT,
+  includeAdventureMetadata = false,
+): CatalogManifest {
   const sourcePath = join(projectRoot, sourceRoot);
   const racesPath = join(sourcePath, 'races.json');
   const backgroundsPath = join(sourcePath, 'backgrounds.json');
@@ -345,6 +353,18 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   const monsterTemplatePath = join(sourcePath, 'bestiary', 'template.json');
   requireFile(monsterTemplatePath, 'monster template source file');
   const monsterTemplateFile = classifyEntityFile(projectRoot, monsterTemplatePath, MONSTER_TEMPLATE_COLLECTIONS);
+  const adventureMetadataFiles: ManifestFile[] = [];
+  if (includeAdventureMetadata && sourceRoot === DEFAULT_SOURCE_ROOT) {
+    const adventuresPath = join(sourcePath, 'adventures.json');
+    const booksPath = join(sourcePath, 'books.json');
+    requireFile(adventuresPath, 'adventure metadata source file');
+    requireFile(booksPath, 'book metadata source file');
+    const adventureFile = classifyEntityFile(projectRoot, adventuresPath, ADVENTURE_COLLECTIONS);
+    const bookFile = classifyEntityFile(projectRoot, booksPath, BOOK_COLLECTIONS);
+    requireDomains([adventureFile], ['adventure'], 'adventure metadata');
+    requireDomains([bookFile], ['book'], 'book metadata');
+    adventureMetadataFiles.push(adventureFile, bookFile);
+  }
   const encountersPath = join(sourcePath, 'encounters.json');
   const lootPath = join(sourcePath, 'loot.json');
   requireFile(encountersPath, 'encounter source file');
@@ -405,6 +425,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
     ...spellFiles,
     ...bestiaryFiles,
     monsterTemplateFile,
+    ...adventureMetadataFiles,
     encounterFile,
     lootFile,
   ];

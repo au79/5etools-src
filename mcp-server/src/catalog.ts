@@ -28,6 +28,11 @@ export interface CatalogSourceRoot {
   readonly path: string;
 }
 
+export interface CatalogAdventurePolicy {
+  readonly mode: 'disabled' | 'allowlist' | 'all';
+  readonly sourceIds: readonly string[];
+}
+
 export interface CatalogDiagnostics {
   readonly fileCount: number;
   readonly recordCount: number;
@@ -92,6 +97,8 @@ export function createRecordId(domain: CatalogCollection, record: RawRecord): st
     case 'monster':
     case 'monsterTemplate':
     case 'legendaryGroupTemplate':
+    case 'adventure':
+    case 'book':
     case 'encounter':
     case 'lootIndividual':
     case 'lootHoard':
@@ -164,6 +171,14 @@ export function createRecordId(domain: CatalogCollection, record: RawRecord): st
   return parts.map(idPart).join('/');
 }
 
+function projectAdventureMetadata(domain: 'adventure' | 'book', record: RawRecord): RawRecord {
+  const fields =
+    domain === 'adventure'
+      ? ['author', 'group', 'id', 'level', 'name', 'published', 'source', 'storyline']
+      : ['author', 'group', 'id', 'name', 'published', 'source'];
+  return Object.fromEntries(fields.flatMap((field) => (record[field] === undefined ? [] : [[field, record[field]]])));
+}
+
 function createCatalogRecord(domain: CatalogCollection, file: string, record: RawRecord): CatalogRecord {
   return {
     data: record,
@@ -196,6 +211,7 @@ export function createCatalog(
   sourceRoots: readonly CatalogSourceRoot[] = [
     { name: DEFAULT_SOURCE_ROOT, path: join(projectRoot, DEFAULT_SOURCE_ROOT) },
   ],
+  adventurePolicy: CatalogAdventurePolicy = { mode: 'disabled', sourceIds: [] },
 ): Catalog {
   if (sourceRoots.length === 0) throw new CatalogError('At least one source root must be enabled.');
 
@@ -204,7 +220,8 @@ export function createCatalog(
   const manifests: CatalogManifest[] = [];
 
   for (const sourceRoot of sourceRoots) {
-    const manifest = createCatalogManifest(projectRoot, sourceRoot.name);
+    const includeAdventureMetadata = adventurePolicy.mode !== 'disabled' && sourceRoot.name === DEFAULT_SOURCE_ROOT;
+    const manifest = createCatalogManifest(projectRoot, sourceRoot.name, includeAdventureMetadata);
     manifests.push(manifest);
 
     for (const file of manifest.files) {
@@ -216,9 +233,20 @@ export function createCatalog(
         (collection) => collection.domain !== 'lootDragonMundaneItemTable',
       );
       const collections = standardCollections.map((collection) => collection.domain!);
+      const metadataCollection = file.collections.find(
+        (collection) => collection.domain === 'adventure' || collection.domain === 'book',
+      );
+      const catalogValue =
+        metadataCollection === undefined
+          ? value
+          : {
+              [metadataCollection.name]: (value as Record<string, readonly RawRecord[]>)[metadataCollection.name]!.map(
+                (record) => projectAdventureMetadata(metadataCollection.domain as 'adventure' | 'book', record),
+              ),
+            };
       const validated = validateCollectionFile(
         file.path,
-        value,
+        catalogValue,
         collections,
         standardCollections.map((collection) => collection.name),
         file.collections.map((collection) => collection.name),
@@ -226,6 +254,13 @@ export function createCatalog(
 
       for (const collection of collections) {
         for (const record of validated[collection]!) {
+          if (
+            (collection === 'adventure' || collection === 'book') &&
+            adventurePolicy.mode === 'allowlist' &&
+            !adventurePolicy.sourceIds.includes(requireIdentityPart(record, 'source'))
+          ) {
+            continue;
+          }
           const catalogRecord = createCatalogRecord(collection, file.path, record);
           const conflictingRecord = recordsById.get(catalogRecord.id);
           if (conflictingRecord !== undefined) {

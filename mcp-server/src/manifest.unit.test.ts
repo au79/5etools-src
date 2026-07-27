@@ -94,6 +94,19 @@ void describe('Phase 1 manifest', () => {
     assert.deepEqual(getManifestDiagnostics(manifest).enabledDomains, CATALOG_DOMAINS);
   });
 
+  void test('discovers adventure and book metadata only when explicitly enabled', () => {
+    const projectRoot = fileURLToPath(new URL('../../..', import.meta.url));
+    const disabled = createCatalogManifest(projectRoot);
+    assert.equal(
+      disabled.files.some((file) => file.path === 'data/adventures.json'),
+      false,
+    );
+
+    const enabled = createCatalogManifest(projectRoot, 'data', true);
+    assert.ok(enabled.files.some((file) => file.path === 'data/adventures.json'));
+    assert.ok(enabled.files.some((file) => file.path === 'data/books.json'));
+  });
+
   void test('rejects missing and unclassified required source collections', () => {
     const missingCollectionRoot = createFixtureRoot();
     writeFileSync(join(missingCollectionRoot, 'data', 'races.json'), '{ "race": [] }');
