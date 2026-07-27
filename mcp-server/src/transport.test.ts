@@ -108,6 +108,14 @@ void describe('MCP stdio transport', () => {
       if (!isTextContent(actionContent)) throw new Error('The action get tool did not return text content');
       assert.equal((JSON.parse(actionContent.text) as { readonly id?: unknown }).id, 'action/attack/phb');
 
+      const condition = await client.callTool({
+        arguments: { domain: 'condition', name: 'Blinded', source: 'PHB' },
+        name: GET_TOOL,
+      });
+      const conditionContent = getFirstContent(condition.content);
+      if (!isTextContent(conditionContent)) throw new Error('The condition get tool did not return text content');
+      assert.equal((JSON.parse(conditionContent.text) as { readonly id?: unknown }).id, 'condition/blinded/phb');
+
       const equipmentGets = [
         [{ domain: 'item', name: 'Bag of Holding', source: 'DMG' }, 'item/bag%20of%20holding/dmg'],
         [{ domain: 'itemGroup', name: 'Arcane Focus', source: 'PHB' }, 'itemgroup/arcane%20focus/phb'],
