@@ -109,6 +109,7 @@ void describe('Phase 1 catalog', () => {
     );
     assert.equal(attack?.id, 'action/attack/phb');
     assert.equal(attack?.file, 'data/actions.json');
+    assert.equal(createRecordId('condition', { name: 'Blinded', source: 'PHB' }), 'condition/blinded/phb');
 
     const equipment = [
       ['item', 'Bag of Holding', 'DMG', 'item/bag%20of%20holding/dmg', 'data/items.json'],

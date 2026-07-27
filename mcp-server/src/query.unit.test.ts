@@ -101,6 +101,23 @@ void describe('Catalog queries', () => {
     );
   });
 
+  void test('searches condition reference domains and keeps duplicate names ambiguous', () => {
+    const catalog = getCatalog();
+    assert.equal(
+      searchCatalog(catalog, { domain: 'condition', query: 'blinded', source: 'PHB' })[0]?.id,
+      'condition/blinded/phb',
+    );
+    assert.equal(
+      getCatalogRecord(catalog, { domain: 'disease', name: 'Cackle Fever', source: 'DMG' })?.id,
+      'disease/cackle%20fever/dmg',
+    );
+    assert.equal(
+      getCatalogRecord(catalog, { domain: 'status', name: 'Bloodied', source: 'XPHB' })?.id,
+      'status/bloodied/xphb',
+    );
+    assert.throws(() => getCatalogRecord(catalog, { domain: 'condition', name: 'Blinded' }), QueryError);
+  });
+
   void test('searches and safely retrieves every equipment domain', () => {
     const catalog = getCatalog();
     const records = [

@@ -17,6 +17,7 @@ void describe('Phase 1 validation', () => {
     const optionalFeatures = [{ featureType: ['EI'], name: 'Agonizing Blast', source: 'PHB' }];
     const facilities = [{ facilityType: 'special', level: 5, name: 'Ancient Altar', source: 'RHW' }];
     const actions = [{ entries: ['Make one attack.'], name: 'Attack', source: 'PHB' }];
+    const conditions = [{ entries: ['You cannot see.'], name: 'Blinded', source: 'PHB' }];
     const itemProperty = [{ abbreviation: 'A', source: 'PHB' }];
 
     assert.strictEqual(validateCollectionRecords('data/races.json', 'race', records), records);
@@ -28,6 +29,7 @@ void describe('Phase 1 validation', () => {
     );
     assert.strictEqual(validateCollectionRecords('data/bastions.json', 'facility', facilities), facilities);
     assert.strictEqual(validateCollectionRecords('data/actions.json', 'action', actions), actions);
+    assert.strictEqual(validateCollectionRecords('data/conditionsdiseases.json', 'condition', conditions), conditions);
     assert.strictEqual(validateCollectionRecords('data/items-base.json', 'itemProperty', itemProperty), itemProperty);
     for (const collection of [
       'item',
@@ -159,6 +161,7 @@ void describe('Phase 1 validation', () => {
     assert.ok(result.files.includes('data/optionalfeatures.json'));
     assert.ok(result.files.includes('data/bastions.json'));
     assert.ok(result.files.includes('data/actions.json'));
+    assert.ok(result.files.includes('data/conditionsdiseases.json'));
     assert.ok(result.files.includes('data/spells/spells-phb.json'));
     assert.ok(result.files.includes('data/items.json'));
     assert.ok(result.files.includes('data/items-base.json'));

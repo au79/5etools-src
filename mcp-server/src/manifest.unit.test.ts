@@ -53,6 +53,7 @@ void describe('Phase 1 manifest', () => {
     assert.ok(manifest.files.some((file) => file.path === 'data/optionalfeatures.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/bastions.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/actions.json' && file.role === 'entity'));
+    assert.ok(manifest.files.some((file) => file.path === 'data/conditionsdiseases.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/items.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/items-base.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/vehicles.json' && file.role === 'entity'));
