@@ -40,6 +40,10 @@ function createFixtureRoot(): string {
   writeFileSync(join(root, 'data', 'spells', 'spells-fixture.json'), '{ "spell": [] }');
   writeFileSync(join(root, 'data', 'bestiary', 'index.json'), '{ "TST": "bestiary-fixture.json" }');
   writeFileSync(join(root, 'data', 'bestiary', 'bestiary-fixture.json'), '{ "monster": [] }');
+  writeFileSync(
+    join(root, 'data', 'bestiary', 'template.json'),
+    '{ "monsterTemplate": [], "legendaryGroupTemplate": [] }',
+  );
   writeFileSync(join(root, 'data', 'class', 'index.json'), '{}');
   writeFileSync(
     join(root, 'data', 'class', 'class-fixture.json'),
@@ -233,6 +237,10 @@ void describe('Phase 1 manifest', () => {
       '{ "TST": "bestiary-fixture.json" }',
     );
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'bestiary', 'bestiary-fixture.json'), '{ "monster": [] }');
+    writeFileSync(
+      join(missingClassDirectoryRoot, 'data', 'bestiary', 'template.json'),
+      '{ "monsterTemplate": [], "legendaryGroupTemplate": [] }',
+    );
     assert.throws(
       () => createCatalogManifest(missingClassDirectoryRoot),
       (error: unknown) => error instanceof ManifestError && error.message.includes('class source directory'),

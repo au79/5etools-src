@@ -89,6 +89,8 @@ export function createRecordId(domain: CatalogCollection, record: RawRecord): st
     case 'hazard':
     case 'table':
     case 'monster':
+    case 'monsterTemplate':
+    case 'legendaryGroupTemplate':
     case 'item':
     case 'itemGroup':
     case 'itemBase':

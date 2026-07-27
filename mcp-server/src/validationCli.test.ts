@@ -33,6 +33,10 @@ function createFixtureRoot(): string {
   writeFileSync(join(root, 'data', 'spells', 'spells-fixture.json'), '{ "spell": [] }');
   writeFileSync(join(root, 'data', 'bestiary', 'index.json'), '{ "TST": "bestiary-fixture.json" }');
   writeFileSync(join(root, 'data', 'bestiary', 'bestiary-fixture.json'), '{ "monster": [] }');
+  writeFileSync(
+    join(root, 'data', 'bestiary', 'template.json'),
+    '{ "monsterTemplate": [], "legendaryGroupTemplate": [] }',
+  );
   writeFileSync(join(root, 'data', 'class', 'index.json'), '{}');
   writeFileSync(
     join(root, 'data', 'class', 'class-fixture.json'),
@@ -56,7 +60,7 @@ void describe('Validation CLI', () => {
     const valid = runValidationCli(root);
 
     assert.equal(valid.status, 0);
-    assert.match(valid.stdout, /Validation succeeded: 18 files across data\./);
+    assert.match(valid.stdout, /Validation succeeded: 19 files across data\./);
     assert.equal(valid.stderr, '');
 
     writeFileSync(

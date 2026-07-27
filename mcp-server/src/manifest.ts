@@ -36,6 +36,8 @@ export const CATALOG_DOMAINS = [
   'deity',
   'table',
   'monster',
+  'monsterTemplate',
+  'legendaryGroupTemplate',
   'item',
   'itemGroup',
   'itemBase',
@@ -120,6 +122,10 @@ const TRAP_HAZARD_COLLECTIONS = new Map<string, CatalogDomain>([
 const DEITY_COLLECTIONS = new Map<string, CatalogDomain>([['deity', 'deity']]);
 const TABLE_COLLECTIONS = new Map<string, CatalogDomain>([['table', 'table']]);
 const MONSTER_COLLECTIONS = new Map<string, CatalogDomain>([['monster', 'monster']]);
+const MONSTER_TEMPLATE_COLLECTIONS = new Map<string, CatalogDomain>([
+  ['monsterTemplate', 'monsterTemplate'],
+  ['legendaryGroupTemplate', 'legendaryGroupTemplate'],
+]);
 const ITEM_COLLECTIONS = new Map<string, CatalogDomain>([
   ['item', 'item'],
   ['itemGroup', 'itemGroup'],
@@ -318,6 +324,9 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   const vehicleFile = classifyEntityFile(projectRoot, vehiclesPath, VEHICLE_COLLECTIONS);
   const spellFiles = classifySpellFiles(projectRoot, sourcePath);
   const bestiaryFiles = classifyBestiaryFiles(projectRoot, sourcePath);
+  const monsterTemplatePath = join(sourcePath, 'bestiary', 'template.json');
+  requireFile(monsterTemplatePath, 'monster template source file');
+  const monsterTemplateFile = classifyEntityFile(projectRoot, monsterTemplatePath, MONSTER_TEMPLATE_COLLECTIONS);
   requireDomains([raceFile], ['race', 'subrace'], 'race');
   requireDomains([backgroundFile], ['background'], 'background');
   requireDomains([featFile], ['feat'], 'feat');
@@ -337,6 +346,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
     'base item',
   );
   requireDomains([vehicleFile], ['vehicle', 'vehicleUpgrade'], 'vehicle');
+  requireDomains([monsterTemplateFile], ['monsterTemplate', 'legendaryGroupTemplate'], 'monster template');
 
   const files: ManifestFile[] = [
     raceFile,
@@ -356,6 +366,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
     vehicleFile,
     ...spellFiles,
     ...bestiaryFiles,
+    monsterTemplateFile,
   ];
   const classEntityFiles: ManifestFile[] = [];
   for (const fileName of readdirSync(classDirectory)

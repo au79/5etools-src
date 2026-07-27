@@ -25,6 +25,8 @@ export const CATALOG_COLLECTIONS = [
   'deity',
   'table',
   'monster',
+  'monsterTemplate',
+  'legendaryGroupTemplate',
   'item',
   'itemGroup',
   'itemBase',
@@ -571,6 +573,8 @@ const COLLECTION_FIELDS: Readonly<Record<CatalogCollection, readonly string[]>> 
     'vulnerable',
     'wis',
   ],
+  monsterTemplate: ['_copy', 'alias', 'apply', 'crMin', 'name', 'page', 'prerequisite', 'ref', 'source'],
+  legendaryGroupTemplate: ['apply', 'name', 'page', 'ref', 'source'],
   item: [
     '_copy',
     'ability',

@@ -34,6 +34,10 @@ function createFixtureRoot(): string {
   writeFileSync(join(root, 'data', 'spells', 'spells-fixture.json'), '{ "spell": [] }');
   writeFileSync(join(root, 'data', 'bestiary', 'index.json'), '{ "TST": "bestiary-fixture.json" }');
   writeFileSync(join(root, 'data', 'bestiary', 'bestiary-fixture.json'), '{ "monster": [] }');
+  writeFileSync(
+    join(root, 'data', 'bestiary', 'template.json'),
+    '{ "monsterTemplate": [], "legendaryGroupTemplate": [] }',
+  );
   writeFileSync(join(root, 'data', 'class', 'index.json'), '{}');
   writeFileSync(
     join(root, 'data', 'class', 'class-fixture.json'),
@@ -68,6 +72,10 @@ function createAlternateSourceRoot(root: string, name: string): void {
   writeFileSync(join(root, name, 'spells', 'spells-fixture.json'), '{ "spell": [] }');
   writeFileSync(join(root, name, 'bestiary', 'index.json'), '{ "TST": "bestiary-fixture.json" }');
   writeFileSync(join(root, name, 'bestiary', 'bestiary-fixture.json'), '{ "monster": [] }');
+  writeFileSync(
+    join(root, name, 'bestiary', 'template.json'),
+    '{ "monsterTemplate": [], "legendaryGroupTemplate": [] }',
+  );
   writeFileSync(join(root, name, 'class', 'index.json'), '{}');
   writeFileSync(
     join(root, name, 'class', 'class-fixture.json'),
@@ -134,6 +142,10 @@ void describe('Phase 1 catalog', () => {
       'table/2%2C500%20gp%20art%20objects/psx',
     );
     assert.equal(createRecordId('monster', { name: 'Aboleth', source: 'MM' }), 'monster/aboleth/mm');
+    assert.equal(
+      createRecordId('monsterTemplate', { name: 'Aarakocra', source: 'DMG' }),
+      'monstertemplate/aarakocra/dmg',
+    );
 
     const equipment = [
       ['item', 'Bag of Holding', 'DMG', 'item/bag%20of%20holding/dmg', 'data/items.json'],

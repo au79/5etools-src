@@ -186,6 +186,30 @@ void describe('Catalog queries', () => {
       getCatalogRecord(catalog, { domain: 'monster', name: 'Aboleth', source: 'MM' })?.file,
       'data/bestiary/bestiary-mm.json',
     );
+    assert.throws(() => getCatalogRecord(catalog, { domain: 'monster', name: 'Space Hamster' }), QueryError);
+
+    const variant = getCatalogRecord(catalog, { domain: 'monster', name: 'Living Portent', source: 'BMT' });
+    assert.ok(Array.isArray(variant?.data.variant));
+
+    const complexAction = getCatalogRecord(catalog, { domain: 'monster', name: 'Pazrodine', source: 'BMT' });
+    assert.ok(Array.isArray(complexAction?.data.action));
+    assert.ok(
+      (complexAction?.data.action as readonly unknown[]).some(
+        (action) => typeof action === 'object' && action !== null,
+      ),
+    );
+  });
+
+  void test('searches monster template domains by their source-aware identities', () => {
+    const catalog = getCatalog();
+    assert.equal(
+      getCatalogRecord(catalog, { domain: 'monsterTemplate', name: 'Aarakocra', source: 'DMG' })?.id,
+      'monstertemplate/aarakocra/dmg',
+    );
+    assert.equal(
+      getCatalogRecord(catalog, { domain: 'legendaryGroupTemplate', name: 'Shadow Dragon', source: 'FTD' })?.id,
+      'legendarygrouptemplate/shadow%20dragon/ftd',
+    );
   });
 
   void test('searches and safely retrieves every equipment domain', () => {

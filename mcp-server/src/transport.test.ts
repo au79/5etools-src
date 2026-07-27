@@ -167,6 +167,14 @@ void describe('MCP stdio transport', () => {
       if (!isTextContent(monsterContent)) throw new Error('The monster get tool did not return text content');
       assert.equal((JSON.parse(monsterContent.text) as { readonly id?: unknown }).id, 'monster/aboleth/mm');
 
+      const template = await client.callTool({
+        arguments: { domain: 'monsterTemplate', name: 'Aarakocra', source: 'DMG' },
+        name: GET_TOOL,
+      });
+      const templateContent = getFirstContent(template.content);
+      if (!isTextContent(templateContent)) throw new Error('The monster template get tool did not return text content');
+      assert.equal((JSON.parse(templateContent.text) as { readonly id?: unknown }).id, 'monstertemplate/aarakocra/dmg');
+
       const equipmentGets = [
         [{ domain: 'item', name: 'Bag of Holding', source: 'DMG' }, 'item/bag%20of%20holding/dmg'],
         [{ domain: 'itemGroup', name: 'Arcane Focus', source: 'PHB' }, 'itemgroup/arcane%20focus/phb'],

@@ -33,6 +33,10 @@ function createFixtureRoot(): string {
   writeFileSync(join(root, 'data', 'spells', 'spells-fixture.json'), '{ "spell": [] }');
   writeFileSync(join(root, 'data', 'bestiary', 'index.json'), '{ "TST": "bestiary-fixture.json" }');
   writeFileSync(join(root, 'data', 'bestiary', 'bestiary-fixture.json'), '{ "monster": [] }');
+  writeFileSync(
+    join(root, 'data', 'bestiary', 'template.json'),
+    '{ "monsterTemplate": [], "legendaryGroupTemplate": [] }',
+  );
   writeFileSync(join(root, 'data', 'class', 'index.json'), '{}');
   writeFileSync(
     join(root, 'data', 'class', 'class-fixture.json'),
@@ -67,6 +71,10 @@ function addSourceRoot(root: string, name: string): void {
   writeFileSync(join(root, name, 'spells', 'spells-fixture.json'), '{ "spell": [] }');
   writeFileSync(join(root, name, 'bestiary', 'index.json'), '{ "TST": "bestiary-fixture.json" }');
   writeFileSync(join(root, name, 'bestiary', 'bestiary-fixture.json'), '{ "monster": [] }');
+  writeFileSync(
+    join(root, name, 'bestiary', 'template.json'),
+    '{ "monsterTemplate": [], "legendaryGroupTemplate": [] }',
+  );
   writeFileSync(join(root, name, 'class', 'index.json'), '{}');
   writeFileSync(
     join(root, name, 'class', 'class-fixture.json'),
@@ -80,8 +88,8 @@ void describe('Validation command', () => {
     const result = runValidationCommand({ defaultProjectRoot: root, environment: {}, workingDirectory: root });
 
     assert.equal(result.results.length, 1);
-    assert.equal(result.results[0]?.files.length, 18);
-    assert.equal(formatValidationSummary(result), 'Validation succeeded: 18 files across data.');
+    assert.equal(result.results[0]?.files.length, 19);
+    assert.equal(formatValidationSummary(result), 'Validation succeeded: 19 files across data.');
   });
 
   void test('uses the same source precedence as server startup', () => {
