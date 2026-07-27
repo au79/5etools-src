@@ -132,6 +132,14 @@ void describe('MCP stdio transport', () => {
       if (!isTextContent(objectContent)) throw new Error('The object get tool did not return text content');
       assert.equal((JSON.parse(objectContent.text) as { readonly id?: unknown }).id, 'object/ballista/dmg');
 
+      const trap = await client.callTool({
+        arguments: { domain: 'trap', name: 'Falling Net', source: 'DMG' },
+        name: GET_TOOL,
+      });
+      const trapContent = getFirstContent(trap.content);
+      if (!isTextContent(trapContent)) throw new Error('The trap get tool did not return text content');
+      assert.equal((JSON.parse(trapContent.text) as { readonly id?: unknown }).id, 'trap/falling%20net/dmg');
+
       const equipmentGets = [
         [{ domain: 'item', name: 'Bag of Holding', source: 'DMG' }, 'item/bag%20of%20holding/dmg'],
         [{ domain: 'itemGroup', name: 'Arcane Focus', source: 'PHB' }, 'itemgroup/arcane%20focus/phb'],

@@ -31,6 +31,8 @@ export const CATALOG_DOMAINS = [
   'language',
   'languageScript',
   'object',
+  'trap',
+  'hazard',
   'item',
   'itemGroup',
   'itemBase',
@@ -108,6 +110,10 @@ const LANGUAGE_COLLECTIONS = new Map<string, CatalogDomain>([
   ['languageScript', 'languageScript'],
 ]);
 const OBJECT_COLLECTIONS = new Map<string, CatalogDomain>([['object', 'object']]);
+const TRAP_HAZARD_COLLECTIONS = new Map<string, CatalogDomain>([
+  ['trap', 'trap'],
+  ['hazard', 'hazard'],
+]);
 const ITEM_COLLECTIONS = new Map<string, CatalogDomain>([
   ['item', 'item'],
   ['itemGroup', 'itemGroup'],
@@ -233,6 +239,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   const conditionsDiseasesPath = join(sourcePath, 'conditionsdiseases.json');
   const languagesPath = join(sourcePath, 'languages.json');
   const objectsPath = join(sourcePath, 'objects.json');
+  const trapsHazardsPath = join(sourcePath, 'trapshazards.json');
   const itemsPath = join(sourcePath, 'items.json');
   const itemBasesPath = join(sourcePath, 'items-base.json');
   const vehiclesPath = join(sourcePath, 'vehicles.json');
@@ -247,6 +254,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   requireFile(conditionsDiseasesPath, 'condition and disease source file');
   requireFile(languagesPath, 'language source file');
   requireFile(objectsPath, 'object source file');
+  requireFile(trapsHazardsPath, 'trap and hazard source file');
   requireFile(itemsPath, 'item source file');
   requireFile(itemBasesPath, 'base item source file');
   requireFile(vehiclesPath, 'vehicle source file');
@@ -264,6 +272,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   const conditionDiseaseFile = classifyEntityFile(projectRoot, conditionsDiseasesPath, CONDITION_DISEASE_COLLECTIONS);
   const languageFile = classifyEntityFile(projectRoot, languagesPath, LANGUAGE_COLLECTIONS);
   const objectFile = classifyEntityFile(projectRoot, objectsPath, OBJECT_COLLECTIONS);
+  const trapHazardFile = classifyEntityFile(projectRoot, trapsHazardsPath, TRAP_HAZARD_COLLECTIONS);
   const itemFile = classifyEntityFile(projectRoot, itemsPath, ITEM_COLLECTIONS);
   const itemBaseFile = classifyEntityFile(projectRoot, itemBasesPath, ITEM_BASE_COLLECTIONS);
   const vehicleFile = classifyEntityFile(projectRoot, vehiclesPath, VEHICLE_COLLECTIONS);
@@ -277,6 +286,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   requireDomains([conditionDiseaseFile], ['condition', 'disease', 'status'], 'condition and disease');
   requireDomains([languageFile], ['language', 'languageScript'], 'language');
   requireDomains([objectFile], ['object'], 'object');
+  requireDomains([trapHazardFile], ['trap', 'hazard'], 'trap and hazard');
   requireDomains([itemFile], ['item', 'itemGroup'], 'item');
   requireDomains(
     [itemBaseFile],
@@ -295,6 +305,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
     conditionDiseaseFile,
     languageFile,
     objectFile,
+    trapHazardFile,
     itemFile,
     itemBaseFile,
     vehicleFile,

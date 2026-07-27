@@ -144,6 +144,20 @@ void describe('Catalog queries', () => {
     assert.throws(() => getCatalogRecord(catalog, { domain: 'object', name: 'Ballista' }), QueryError);
   });
 
+  void test('searches traps and hazards with source-aware identities', () => {
+    const catalog = getCatalog();
+    assert.equal(
+      searchCatalog(catalog, { domain: 'trap', query: 'falling net', source: 'DMG' })[0]?.id,
+      'trap/falling%20net/dmg',
+    );
+    assert.equal(
+      getCatalogRecord(catalog, { domain: 'hazard', name: 'Avalanche', source: 'IDRotF' })?.id,
+      'hazard/avalanche/idrotf',
+    );
+    assert.throws(() => getCatalogRecord(catalog, { domain: 'trap', name: 'Falling Net' }), QueryError);
+    assert.throws(() => getCatalogRecord(catalog, { domain: 'hazard', name: 'Avalanche' }), QueryError);
+  });
+
   void test('searches and safely retrieves every equipment domain', () => {
     const catalog = getCatalog();
     const records = [
