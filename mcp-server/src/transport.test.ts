@@ -159,6 +159,14 @@ void describe('MCP stdio transport', () => {
         'table/2%2C500%20gp%20art%20objects/psx',
       );
 
+      const monster = await client.callTool({
+        arguments: { domain: 'monster', name: 'Aboleth', source: 'MM' },
+        name: GET_TOOL,
+      });
+      const monsterContent = getFirstContent(monster.content);
+      if (!isTextContent(monsterContent)) throw new Error('The monster get tool did not return text content');
+      assert.equal((JSON.parse(monsterContent.text) as { readonly id?: unknown }).id, 'monster/aboleth/mm');
+
       const equipmentGets = [
         [{ domain: 'item', name: 'Bag of Holding', source: 'DMG' }, 'item/bag%20of%20holding/dmg'],
         [{ domain: 'itemGroup', name: 'Arcane Focus', source: 'PHB' }, 'itemgroup/arcane%20focus/phb'],

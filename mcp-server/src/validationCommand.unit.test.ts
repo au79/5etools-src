@@ -9,6 +9,7 @@ import { formatValidationSummary, runValidationCommand } from './validationComma
 function createFixtureRoot(): string {
   const root = join(tmpdir(), `5etools-mcp-validation-command-${crypto.randomUUID()}`);
   mkdirSync(join(root, 'data', 'class'), { recursive: true });
+  mkdirSync(join(root, 'data', 'bestiary'), { recursive: true });
   mkdirSync(join(root, 'data', 'spells'), { recursive: true });
   writeFileSync(join(root, 'data', 'races.json'), '{ "race": [], "subrace": [] }');
   writeFileSync(join(root, 'data', 'backgrounds.json'), '{ "background": [] }');
@@ -30,6 +31,8 @@ function createFixtureRoot(): string {
   writeFileSync(join(root, 'data', 'vehicles.json'), '{ "vehicle": [], "vehicleUpgrade": [] }');
   writeFileSync(join(root, 'data', 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
   writeFileSync(join(root, 'data', 'spells', 'spells-fixture.json'), '{ "spell": [] }');
+  writeFileSync(join(root, 'data', 'bestiary', 'index.json'), '{ "TST": "bestiary-fixture.json" }');
+  writeFileSync(join(root, 'data', 'bestiary', 'bestiary-fixture.json'), '{ "monster": [] }');
   writeFileSync(join(root, 'data', 'class', 'index.json'), '{}');
   writeFileSync(
     join(root, 'data', 'class', 'class-fixture.json'),
@@ -40,6 +43,7 @@ function createFixtureRoot(): string {
 
 function addSourceRoot(root: string, name: string): void {
   mkdirSync(join(root, name, 'class'), { recursive: true });
+  mkdirSync(join(root, name, 'bestiary'), { recursive: true });
   mkdirSync(join(root, name, 'spells'), { recursive: true });
   writeFileSync(join(root, name, 'races.json'), '{ "race": [], "subrace": [] }');
   writeFileSync(join(root, name, 'backgrounds.json'), '{ "background": [] }');
@@ -61,6 +65,8 @@ function addSourceRoot(root: string, name: string): void {
   writeFileSync(join(root, name, 'vehicles.json'), '{ "vehicle": [], "vehicleUpgrade": [] }');
   writeFileSync(join(root, name, 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
   writeFileSync(join(root, name, 'spells', 'spells-fixture.json'), '{ "spell": [] }');
+  writeFileSync(join(root, name, 'bestiary', 'index.json'), '{ "TST": "bestiary-fixture.json" }');
+  writeFileSync(join(root, name, 'bestiary', 'bestiary-fixture.json'), '{ "monster": [] }');
   writeFileSync(join(root, name, 'class', 'index.json'), '{}');
   writeFileSync(
     join(root, name, 'class', 'class-fixture.json'),
@@ -74,8 +80,8 @@ void describe('Validation command', () => {
     const result = runValidationCommand({ defaultProjectRoot: root, environment: {}, workingDirectory: root });
 
     assert.equal(result.results.length, 1);
-    assert.equal(result.results[0]?.files.length, 17);
-    assert.equal(formatValidationSummary(result), 'Validation succeeded: 17 files across data.');
+    assert.equal(result.results[0]?.files.length, 18);
+    assert.equal(formatValidationSummary(result), 'Validation succeeded: 18 files across data.');
   });
 
   void test('uses the same source precedence as server startup', () => {

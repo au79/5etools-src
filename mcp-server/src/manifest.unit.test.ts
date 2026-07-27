@@ -16,6 +16,7 @@ import {
 function createFixtureRoot(): string {
   const root = mkdtempSync(join(tmpdir(), '5etools-mcp-manifest-'));
   mkdirSync(join(root, 'data', 'class'), { recursive: true });
+  mkdirSync(join(root, 'data', 'bestiary'), { recursive: true });
   mkdirSync(join(root, 'data', 'spells'), { recursive: true });
   writeFileSync(join(root, 'data', 'races.json'), '{ "race": [], "subrace": [] }');
   writeFileSync(join(root, 'data', 'backgrounds.json'), '{ "background": [] }');
@@ -37,6 +38,8 @@ function createFixtureRoot(): string {
   writeFileSync(join(root, 'data', 'vehicles.json'), '{ "vehicle": [], "vehicleUpgrade": [] }');
   writeFileSync(join(root, 'data', 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
   writeFileSync(join(root, 'data', 'spells', 'spells-fixture.json'), '{ "spell": [] }');
+  writeFileSync(join(root, 'data', 'bestiary', 'index.json'), '{ "TST": "bestiary-fixture.json" }');
+  writeFileSync(join(root, 'data', 'bestiary', 'bestiary-fixture.json'), '{ "monster": [] }');
   writeFileSync(join(root, 'data', 'class', 'index.json'), '{}');
   writeFileSync(
     join(root, 'data', 'class', 'class-fixture.json'),
@@ -136,6 +139,13 @@ void describe('Phase 1 manifest', () => {
       (error: unknown) => error instanceof ManifestError && error.message.includes('spell source directory'),
     );
 
+    const missingBestiaryDirectoryRoot = createFixtureRoot();
+    rmSync(join(missingBestiaryDirectoryRoot, 'data', 'bestiary'), { force: true, recursive: true });
+    assert.throws(
+      () => createCatalogManifest(missingBestiaryDirectoryRoot),
+      (error: unknown) => error instanceof ManifestError && error.message.includes('bestiary source directory'),
+    );
+
     const missingSpellIndexRoot = createFixtureRoot();
     rmSync(join(missingSpellIndexRoot, 'data', 'spells', 'index.json'));
     assert.throws(
@@ -162,6 +172,30 @@ void describe('Phase 1 manifest', () => {
     assert.throws(
       () => createCatalogManifest(missingSpellEntityRoot),
       (error: unknown) => error instanceof ManifestError && error.message.includes('spell entity file'),
+    );
+
+    const invalidBestiaryIndexRoot = createFixtureRoot();
+    writeFileSync(
+      join(invalidBestiaryIndexRoot, 'data', 'bestiary', 'index.json'),
+      '{ "TST": "fluff-bestiary-tst.json" }',
+    );
+    assert.throws(
+      () => createCatalogManifest(invalidBestiaryIndexRoot),
+      (error: unknown) => error instanceof ManifestError && error.message.includes('Invalid bestiary catalog entry'),
+    );
+
+    const emptyBestiaryIndexRoot = createFixtureRoot();
+    writeFileSync(join(emptyBestiaryIndexRoot, 'data', 'bestiary', 'index.json'), '{}');
+    assert.throws(
+      () => createCatalogManifest(emptyBestiaryIndexRoot),
+      (error: unknown) => error instanceof ManifestError && error.message.includes('No bestiary entity files'),
+    );
+
+    const missingBestiaryEntityRoot = createFixtureRoot();
+    rmSync(join(missingBestiaryEntityRoot, 'data', 'bestiary', 'bestiary-fixture.json'));
+    assert.throws(
+      () => createCatalogManifest(missingBestiaryEntityRoot),
+      (error: unknown) => error instanceof ManifestError && error.message.includes('bestiary entity file'),
     );
 
     const missingClassDirectoryRoot = mkdtempSync(join(tmpdir(), '5etools-mcp-manifest-no-class-directory-'));
@@ -193,6 +227,12 @@ void describe('Phase 1 manifest', () => {
     mkdirSync(join(missingClassDirectoryRoot, 'data', 'spells'));
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'spells', 'spells-fixture.json'), '{ "spell": [] }');
+    mkdirSync(join(missingClassDirectoryRoot, 'data', 'bestiary'));
+    writeFileSync(
+      join(missingClassDirectoryRoot, 'data', 'bestiary', 'index.json'),
+      '{ "TST": "bestiary-fixture.json" }',
+    );
+    writeFileSync(join(missingClassDirectoryRoot, 'data', 'bestiary', 'bestiary-fixture.json'), '{ "monster": [] }');
     assert.throws(
       () => createCatalogManifest(missingClassDirectoryRoot),
       (error: unknown) => error instanceof ManifestError && error.message.includes('class source directory'),

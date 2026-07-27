@@ -176,6 +176,18 @@ void describe('Catalog queries', () => {
     );
   });
 
+  void test('searches indexed monsters without loading bestiary support files', () => {
+    const catalog = getCatalog();
+    assert.equal(
+      searchCatalog(catalog, { domain: 'monster', query: 'aboleth', source: 'MM' })[0]?.id,
+      'monster/aboleth/mm',
+    );
+    assert.equal(
+      getCatalogRecord(catalog, { domain: 'monster', name: 'Aboleth', source: 'MM' })?.file,
+      'data/bestiary/bestiary-mm.json',
+    );
+  });
+
   void test('searches and safely retrieves every equipment domain', () => {
     const catalog = getCatalog();
     const records = [

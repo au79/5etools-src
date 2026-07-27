@@ -35,6 +35,7 @@ export const CATALOG_DOMAINS = [
   'hazard',
   'deity',
   'table',
+  'monster',
   'item',
   'itemGroup',
   'itemBase',
@@ -118,6 +119,7 @@ const TRAP_HAZARD_COLLECTIONS = new Map<string, CatalogDomain>([
 ]);
 const DEITY_COLLECTIONS = new Map<string, CatalogDomain>([['deity', 'deity']]);
 const TABLE_COLLECTIONS = new Map<string, CatalogDomain>([['table', 'table']]);
+const MONSTER_COLLECTIONS = new Map<string, CatalogDomain>([['monster', 'monster']]);
 const ITEM_COLLECTIONS = new Map<string, CatalogDomain>([
   ['item', 'item'],
   ['itemGroup', 'itemGroup'],
@@ -232,6 +234,34 @@ function classifySpellFiles(projectRoot: string, sourcePath: string): readonly M
   return [{ collections: [], path: toManifestPath(projectRoot, spellIndexPath), role: 'catalog' }, ...spellFiles];
 }
 
+function classifyBestiaryFiles(projectRoot: string, sourcePath: string): readonly ManifestFile[] {
+  const bestiaryDirectory = join(sourcePath, 'bestiary');
+  const bestiaryIndexPath = join(bestiaryDirectory, 'index.json');
+  if (!existsSync(bestiaryDirectory) || !statSync(bestiaryDirectory).isDirectory()) {
+    throw new ManifestError(`Required bestiary source directory is missing: ${bestiaryDirectory}`);
+  }
+  requireFile(bestiaryIndexPath, 'bestiary catalog');
+
+  const index = readObject(bestiaryIndexPath);
+  const files = new Set<string>();
+  for (const [source, fileName] of Object.entries(index)) {
+    if (typeof fileName !== 'string' || !/^bestiary-[a-z0-9-]+\.json$/u.test(fileName)) {
+      throw new ManifestError(`Invalid bestiary catalog entry for ${JSON.stringify(source)} in ${bestiaryIndexPath}.`);
+    }
+    files.add(fileName);
+  }
+  if (files.size === 0) throw new ManifestError(`No bestiary entity files found in ${bestiaryIndexPath}.`);
+
+  const bestiaryFiles = [...files].sort().map((fileName) => {
+    const path = join(bestiaryDirectory, fileName);
+    requireFile(path, 'bestiary entity file');
+    return classifyEntityFile(projectRoot, path, MONSTER_COLLECTIONS);
+  });
+  requireDomains(bestiaryFiles, ['monster'], 'bestiary');
+
+  return [{ collections: [], path: toManifestPath(projectRoot, bestiaryIndexPath), role: 'catalog' }, ...bestiaryFiles];
+}
+
 export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_SOURCE_ROOT): CatalogManifest {
   const sourcePath = join(projectRoot, sourceRoot);
   const racesPath = join(sourcePath, 'races.json');
@@ -287,6 +317,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   const itemBaseFile = classifyEntityFile(projectRoot, itemBasesPath, ITEM_BASE_COLLECTIONS);
   const vehicleFile = classifyEntityFile(projectRoot, vehiclesPath, VEHICLE_COLLECTIONS);
   const spellFiles = classifySpellFiles(projectRoot, sourcePath);
+  const bestiaryFiles = classifyBestiaryFiles(projectRoot, sourcePath);
   requireDomains([raceFile], ['race', 'subrace'], 'race');
   requireDomains([backgroundFile], ['background'], 'background');
   requireDomains([featFile], ['feat'], 'feat');
@@ -324,6 +355,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
     itemBaseFile,
     vehicleFile,
     ...spellFiles,
+    ...bestiaryFiles,
   ];
   const classEntityFiles: ManifestFile[] = [];
   for (const fileName of readdirSync(classDirectory)

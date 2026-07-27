@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 function createFixtureRoot(): string {
   const root = join(tmpdir(), `5etools-mcp-validation-cli-${crypto.randomUUID()}`);
   mkdirSync(join(root, 'data', 'class'), { recursive: true });
+  mkdirSync(join(root, 'data', 'bestiary'), { recursive: true });
   mkdirSync(join(root, 'data', 'spells'), { recursive: true });
   writeFileSync(join(root, 'data', 'races.json'), '{ "race": [], "subrace": [] }');
   writeFileSync(join(root, 'data', 'backgrounds.json'), '{ "background": [] }');
@@ -30,6 +31,8 @@ function createFixtureRoot(): string {
   writeFileSync(join(root, 'data', 'vehicles.json'), '{ "vehicle": [], "vehicleUpgrade": [] }');
   writeFileSync(join(root, 'data', 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
   writeFileSync(join(root, 'data', 'spells', 'spells-fixture.json'), '{ "spell": [] }');
+  writeFileSync(join(root, 'data', 'bestiary', 'index.json'), '{ "TST": "bestiary-fixture.json" }');
+  writeFileSync(join(root, 'data', 'bestiary', 'bestiary-fixture.json'), '{ "monster": [] }');
   writeFileSync(join(root, 'data', 'class', 'index.json'), '{}');
   writeFileSync(
     join(root, 'data', 'class', 'class-fixture.json'),
@@ -53,7 +56,7 @@ void describe('Validation CLI', () => {
     const valid = runValidationCli(root);
 
     assert.equal(valid.status, 0);
-    assert.match(valid.stdout, /Validation succeeded: 17 files across data\./);
+    assert.match(valid.stdout, /Validation succeeded: 18 files across data\./);
     assert.equal(valid.stderr, '');
 
     writeFileSync(

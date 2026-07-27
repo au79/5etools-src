@@ -10,6 +10,7 @@ import { CatalogError, createCatalog, createRecordId, getCatalogDiagnostics } fr
 function createFixtureRoot(): string {
   const root = mkdtempSync(join(tmpdir(), '5etools-mcp-catalog-'));
   mkdirSync(join(root, 'data', 'class'), { recursive: true });
+  mkdirSync(join(root, 'data', 'bestiary'), { recursive: true });
   mkdirSync(join(root, 'data', 'spells'), { recursive: true });
   writeFileSync(join(root, 'data', 'races.json'), '{ "race": [], "subrace": [] }');
   writeFileSync(join(root, 'data', 'backgrounds.json'), '{ "background": [] }');
@@ -31,6 +32,8 @@ function createFixtureRoot(): string {
   writeFileSync(join(root, 'data', 'vehicles.json'), '{ "vehicle": [], "vehicleUpgrade": [] }');
   writeFileSync(join(root, 'data', 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
   writeFileSync(join(root, 'data', 'spells', 'spells-fixture.json'), '{ "spell": [] }');
+  writeFileSync(join(root, 'data', 'bestiary', 'index.json'), '{ "TST": "bestiary-fixture.json" }');
+  writeFileSync(join(root, 'data', 'bestiary', 'bestiary-fixture.json'), '{ "monster": [] }');
   writeFileSync(join(root, 'data', 'class', 'index.json'), '{}');
   writeFileSync(
     join(root, 'data', 'class', 'class-fixture.json'),
@@ -41,6 +44,7 @@ function createFixtureRoot(): string {
 
 function createAlternateSourceRoot(root: string, name: string): void {
   mkdirSync(join(root, name, 'class'), { recursive: true });
+  mkdirSync(join(root, name, 'bestiary'), { recursive: true });
   mkdirSync(join(root, name, 'spells'), { recursive: true });
   writeFileSync(join(root, name, 'races.json'), '{ "race": [], "subrace": [] }');
   writeFileSync(join(root, name, 'backgrounds.json'), '{ "background": [] }');
@@ -62,6 +66,8 @@ function createAlternateSourceRoot(root: string, name: string): void {
   writeFileSync(join(root, name, 'vehicles.json'), '{ "vehicle": [], "vehicleUpgrade": [] }');
   writeFileSync(join(root, name, 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
   writeFileSync(join(root, name, 'spells', 'spells-fixture.json'), '{ "spell": [] }');
+  writeFileSync(join(root, name, 'bestiary', 'index.json'), '{ "TST": "bestiary-fixture.json" }');
+  writeFileSync(join(root, name, 'bestiary', 'bestiary-fixture.json'), '{ "monster": [] }');
   writeFileSync(join(root, name, 'class', 'index.json'), '{}');
   writeFileSync(
     join(root, name, 'class', 'class-fixture.json'),
@@ -127,6 +133,7 @@ void describe('Phase 1 catalog', () => {
       createRecordId('table', { name: '2,500 gp Art Objects', source: 'PSX' }),
       'table/2%2C500%20gp%20art%20objects/psx',
     );
+    assert.equal(createRecordId('monster', { name: 'Aboleth', source: 'MM' }), 'monster/aboleth/mm');
 
     const equipment = [
       ['item', 'Bag of Holding', 'DMG', 'item/bag%20of%20holding/dmg', 'data/items.json'],
