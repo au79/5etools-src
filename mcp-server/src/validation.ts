@@ -22,6 +22,7 @@ export const CATALOG_COLLECTIONS = [
   'object',
   'trap',
   'hazard',
+  'deity',
   'item',
   'itemGroup',
   'itemBase',
@@ -81,12 +82,14 @@ const ENTRY_SCHEMA: ZodType<unknown> = z.lazy(() =>
         columns: JSON_VALUE_SCHEMA.optional(),
         consumes: JSON_VALUE_SCHEMA.optional(),
         count: JSON_VALUE_SCHEMA.optional(),
+        credit: JSON_VALUE_SCHEMA.optional(),
         data: JSON_VALUE_SCHEMA.optional(),
         entries: z.array(ENTRY_SCHEMA).optional(),
         entry: JSON_VALUE_SCHEMA.optional(),
         feat: JSON_VALUE_SCHEMA.optional(),
         footnotes: JSON_VALUE_SCHEMA.optional(),
         genTables: JSON_VALUE_SCHEMA.optional(),
+        href: JSON_VALUE_SCHEMA.optional(),
         id: JSON_VALUE_SCHEMA.optional(),
         isRequiredOption: JSON_VALUE_SCHEMA.optional(),
         items: z.array(ENTRY_SCHEMA).optional(),
@@ -108,7 +111,14 @@ const ENTRY_SCHEMA: ZodType<unknown> = z.lazy(() =>
       .strict(),
   ]),
 );
-const REQUIRED_STRING_FIELDS = new Set(['source', 'className', 'classSource', 'subclassShortName', 'subclassSource']);
+const REQUIRED_STRING_FIELDS = new Set([
+  'source',
+  'className',
+  'classSource',
+  'pantheon',
+  'subclassShortName',
+  'subclassSource',
+]);
 const NUMBER_FIELDS = new Set(['page', 'header', 'blindsight', 'darkvision']);
 const ARRAY_FIELDS = new Set(['additionalEntries', 'entries']);
 const OBJECT_FIELDS = new Set(['_copy', 'overwrite']);
@@ -437,6 +447,30 @@ const COLLECTION_FIELDS: Readonly<Record<CatalogCollection, readonly string[]>> 
     'reprintedAs',
     'source',
     'trapHazType',
+  ],
+  deity: [
+    '_copy',
+    'additionalSources',
+    'alignment',
+    'altNames',
+    'basicRules',
+    'category',
+    'customExtensionOf',
+    'domains',
+    'entries',
+    'name',
+    'page',
+    'pantheon',
+    'piety',
+    'plane',
+    'province',
+    'reprintAlias',
+    'source',
+    'srd',
+    'symbol',
+    'symbolImg',
+    'title',
+    'worshipers',
   ],
   item: [
     '_copy',
@@ -831,6 +865,7 @@ function getFieldSchema(collection: CatalogCollection, field: string): ZodType<u
   if (field === 'name')
     return collection === 'subrace' || collection === 'itemProperty' ? z.string().optional() : z.string();
   if (field === 'abbreviation' && collection === 'itemProperty') return z.string();
+  if (field === 'pantheon' && collection === 'deity') return z.string();
   if (REQUIRED_STRING_FIELDS.has(field)) return z.string();
   if (field === 'raceName' || field === 'raceSource') return z.string().optional();
   if (field === 'level') {

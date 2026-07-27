@@ -21,6 +21,7 @@ function createFixtureRoot(): string {
   writeFileSync(join(root, 'data', 'languages.json'), '{ "language": [], "languageScript": [] }');
   writeFileSync(join(root, 'data', 'objects.json'), '{ "object": [] }');
   writeFileSync(join(root, 'data', 'trapshazards.json'), '{ "trap": [], "hazard": [] }');
+  writeFileSync(join(root, 'data', 'deities.json'), '{ "deity": [] }');
   writeFileSync(join(root, 'data', 'items.json'), '{ "item": [], "itemGroup": [] }');
   writeFileSync(
     join(root, 'data', 'items-base.json'),
@@ -50,6 +51,7 @@ function createAlternateSourceRoot(root: string, name: string): void {
   writeFileSync(join(root, name, 'languages.json'), '{ "language": [], "languageScript": [] }');
   writeFileSync(join(root, name, 'objects.json'), '{ "object": [] }');
   writeFileSync(join(root, name, 'trapshazards.json'), '{ "trap": [], "hazard": [] }');
+  writeFileSync(join(root, name, 'deities.json'), '{ "deity": [] }');
   writeFileSync(join(root, name, 'items.json'), '{ "item": [], "itemGroup": [] }');
   writeFileSync(
     join(root, name, 'items-base.json'),
@@ -118,6 +120,7 @@ void describe('Phase 1 catalog', () => {
     assert.equal(createRecordId('condition', { name: 'Blinded', source: 'PHB' }), 'condition/blinded/phb');
     assert.equal(createRecordId('object', { name: 'Ballista', source: 'DMG' }), 'object/ballista/dmg');
     assert.equal(createRecordId('trap', { name: 'Falling Net', source: 'DMG' }), 'trap/falling%20net/dmg');
+    assert.equal(createRecordId('deity', { name: 'Aegir', pantheon: 'Norse', source: 'PHB' }), 'deity/norse/aegir/phb');
 
     const equipment = [
       ['item', 'Bag of Holding', 'DMG', 'item/bag%20of%20holding/dmg', 'data/items.json'],
@@ -177,6 +180,7 @@ void describe('Phase 1 catalog', () => {
     assert.equal(createRecordId('action', { name: 'Attack', source: 'PHB' }), 'action/attack/phb');
     assert.equal(createRecordId('object', { name: 'Ballista', source: 'DMG' }), 'object/ballista/dmg');
     assert.equal(createRecordId('hazard', { name: 'Avalanche', source: 'IDRotF' }), 'hazard/avalanche/idrotf');
+    assert.equal(createRecordId('deity', { name: 'Aegir', pantheon: 'Norse', source: 'PHB' }), 'deity/norse/aegir/phb');
     assert.equal(createRecordId('item', { name: 'Bag of Holding', source: 'DMG' }), 'item/bag%20of%20holding/dmg');
     assert.equal(createRecordId('itemProperty', { abbreviation: 'A', source: 'PHB' }), 'itemproperty/a/phb');
     assert.equal(createRecordId('class', { name: 'Wizard', source: 'PHB' }), 'class/wizard/phb');

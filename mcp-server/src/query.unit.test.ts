@@ -158,6 +158,16 @@ void describe('Catalog queries', () => {
     assert.throws(() => getCatalogRecord(catalog, { domain: 'hazard', name: 'Avalanche' }), QueryError);
   });
 
+  void test('searches deities and keeps duplicate names ambiguous', () => {
+    const catalog = getCatalog();
+    assert.equal(
+      searchCatalog(catalog, { domain: 'deity', query: 'aegir', source: 'PHB' })[0]?.id,
+      'deity/norse/aegir/phb',
+    );
+    assert.equal(getCatalogRecord(catalog, { id: 'deity/norse/aegir/phb' })?.id, 'deity/norse/aegir/phb');
+    assert.throws(() => getCatalogRecord(catalog, { domain: 'deity', name: 'Oghma', source: 'PHB' }), QueryError);
+  });
+
   void test('searches and safely retrieves every equipment domain', () => {
     const catalog = getCatalog();
     const records = [

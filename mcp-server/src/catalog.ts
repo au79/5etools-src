@@ -99,6 +99,9 @@ export function createRecordId(domain: CatalogCollection, record: RawRecord): st
     case 'class':
       parts = [domain, requireIdentityPart(record, 'name'), source];
       break;
+    case 'deity':
+      parts = [domain, requireIdentityPart(record, 'pantheon'), requireIdentityPart(record, 'name'), source];
+      break;
     case 'itemProperty':
       parts = [domain, requireIdentityPart(record, 'abbreviation'), source];
       break;

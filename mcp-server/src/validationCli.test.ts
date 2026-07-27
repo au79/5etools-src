@@ -20,6 +20,7 @@ function createFixtureRoot(): string {
   writeFileSync(join(root, 'data', 'languages.json'), '{ "language": [], "languageScript": [] }');
   writeFileSync(join(root, 'data', 'objects.json'), '{ "object": [] }');
   writeFileSync(join(root, 'data', 'trapshazards.json'), '{ "trap": [], "hazard": [] }');
+  writeFileSync(join(root, 'data', 'deities.json'), '{ "deity": [] }');
   writeFileSync(join(root, 'data', 'items.json'), '{ "item": [], "itemGroup": [] }');
   writeFileSync(
     join(root, 'data', 'items-base.json'),
@@ -51,7 +52,7 @@ void describe('Validation CLI', () => {
     const valid = runValidationCli(root);
 
     assert.equal(valid.status, 0);
-    assert.match(valid.stdout, /Validation succeeded: 15 files across data\./);
+    assert.match(valid.stdout, /Validation succeeded: 16 files across data\./);
     assert.equal(valid.stderr, '');
 
     writeFileSync(

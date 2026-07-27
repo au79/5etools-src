@@ -33,6 +33,7 @@ export const CATALOG_DOMAINS = [
   'object',
   'trap',
   'hazard',
+  'deity',
   'item',
   'itemGroup',
   'itemBase',
@@ -114,6 +115,7 @@ const TRAP_HAZARD_COLLECTIONS = new Map<string, CatalogDomain>([
   ['trap', 'trap'],
   ['hazard', 'hazard'],
 ]);
+const DEITY_COLLECTIONS = new Map<string, CatalogDomain>([['deity', 'deity']]);
 const ITEM_COLLECTIONS = new Map<string, CatalogDomain>([
   ['item', 'item'],
   ['itemGroup', 'itemGroup'],
@@ -240,6 +242,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   const languagesPath = join(sourcePath, 'languages.json');
   const objectsPath = join(sourcePath, 'objects.json');
   const trapsHazardsPath = join(sourcePath, 'trapshazards.json');
+  const deitiesPath = join(sourcePath, 'deities.json');
   const itemsPath = join(sourcePath, 'items.json');
   const itemBasesPath = join(sourcePath, 'items-base.json');
   const vehiclesPath = join(sourcePath, 'vehicles.json');
@@ -255,6 +258,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   requireFile(languagesPath, 'language source file');
   requireFile(objectsPath, 'object source file');
   requireFile(trapsHazardsPath, 'trap and hazard source file');
+  requireFile(deitiesPath, 'deity source file');
   requireFile(itemsPath, 'item source file');
   requireFile(itemBasesPath, 'base item source file');
   requireFile(vehiclesPath, 'vehicle source file');
@@ -273,6 +277,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   const languageFile = classifyEntityFile(projectRoot, languagesPath, LANGUAGE_COLLECTIONS);
   const objectFile = classifyEntityFile(projectRoot, objectsPath, OBJECT_COLLECTIONS);
   const trapHazardFile = classifyEntityFile(projectRoot, trapsHazardsPath, TRAP_HAZARD_COLLECTIONS);
+  const deityFile = classifyEntityFile(projectRoot, deitiesPath, DEITY_COLLECTIONS);
   const itemFile = classifyEntityFile(projectRoot, itemsPath, ITEM_COLLECTIONS);
   const itemBaseFile = classifyEntityFile(projectRoot, itemBasesPath, ITEM_BASE_COLLECTIONS);
   const vehicleFile = classifyEntityFile(projectRoot, vehiclesPath, VEHICLE_COLLECTIONS);
@@ -287,6 +292,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   requireDomains([languageFile], ['language', 'languageScript'], 'language');
   requireDomains([objectFile], ['object'], 'object');
   requireDomains([trapHazardFile], ['trap', 'hazard'], 'trap and hazard');
+  requireDomains([deityFile], ['deity'], 'deity');
   requireDomains([itemFile], ['item', 'itemGroup'], 'item');
   requireDomains(
     [itemBaseFile],
@@ -306,6 +312,7 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
     languageFile,
     objectFile,
     trapHazardFile,
+    deityFile,
     itemFile,
     itemBaseFile,
     vehicleFile,

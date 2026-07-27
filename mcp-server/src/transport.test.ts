@@ -140,6 +140,14 @@ void describe('MCP stdio transport', () => {
       if (!isTextContent(trapContent)) throw new Error('The trap get tool did not return text content');
       assert.equal((JSON.parse(trapContent.text) as { readonly id?: unknown }).id, 'trap/falling%20net/dmg');
 
+      const deity = await client.callTool({
+        arguments: { id: 'deity/norse/aegir/phb' },
+        name: GET_TOOL,
+      });
+      const deityContent = getFirstContent(deity.content);
+      if (!isTextContent(deityContent)) throw new Error('The deity get tool did not return text content');
+      assert.equal((JSON.parse(deityContent.text) as { readonly id?: unknown }).id, 'deity/norse/aegir/phb');
+
       const equipmentGets = [
         [{ domain: 'item', name: 'Bag of Holding', source: 'DMG' }, 'item/bag%20of%20holding/dmg'],
         [{ domain: 'itemGroup', name: 'Arcane Focus', source: 'PHB' }, 'itemgroup/arcane%20focus/phb'],
