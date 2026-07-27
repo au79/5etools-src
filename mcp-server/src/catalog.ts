@@ -1,4 +1,3 @@
-/* node:coverage disable */
 import { readFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 
@@ -223,7 +222,7 @@ export function getMetadataSourceIds(projectRoot: string): ReadonlySet<string> {
   return sourceIds;
 }
 
-/* c8 ignore start -- defensive file-shape branches are exercised through policy tests. */
+/* node:coverage disable */
 function getMetadataRecords(projectRoot: string): readonly RawRecord[] {
   const records: RawRecord[] = [];
   for (const [fileName, collection] of [
@@ -332,7 +331,7 @@ export function loadAdventureText(
       };
     });
 }
-/* c8 ignore stop */
+/* node:coverage enable */
 
 function validateAdventureAllowlist(projectRoot: string, sourceIds: readonly string[]): void {
   if (new Set(sourceIds).size !== sourceIds.length) {
@@ -508,4 +507,3 @@ export function getCatalogDiagnostics(catalog: Catalog): CatalogDiagnostics {
     sourceRoots: [...new Set(catalog.records.map((record) => record.sourceRoot))],
   };
 }
-/* node:coverage enable */
