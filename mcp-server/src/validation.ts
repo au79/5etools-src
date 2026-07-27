@@ -27,6 +27,14 @@ export const CATALOG_COLLECTIONS = [
   'monster',
   'monsterTemplate',
   'legendaryGroupTemplate',
+  'encounter',
+  'lootIndividual',
+  'lootHoard',
+  'lootDragon',
+  'lootGem',
+  'lootArtObject',
+  'lootMagicItem',
+  'lootDragonMundaneItemTable',
   'item',
   'itemGroup',
   'itemBase',
@@ -575,6 +583,14 @@ const COLLECTION_FIELDS: Readonly<Record<CatalogCollection, readonly string[]>> 
   ],
   monsterTemplate: ['_copy', 'alias', 'apply', 'crMin', 'name', 'page', 'prerequisite', 'ref', 'source'],
   legendaryGroupTemplate: ['apply', 'name', 'page', 'ref', 'source'],
+  encounter: ['name', 'page', 'source', 'tables'],
+  lootIndividual: ['crMax', 'crMin', 'name', 'page', 'source', 'table'],
+  lootHoard: ['coins', 'crMax', 'crMin', 'name', 'page', 'source', 'table'],
+  lootDragon: ['artObjects', 'coins', 'dragonMundaneItems', 'gems', 'magicItems', 'name', 'page', 'source'],
+  lootGem: ['name', 'page', 'reprintedAs', 'source', 'table', 'type'],
+  lootArtObject: ['name', 'page', 'reprintedAs', 'source', 'table', 'type'],
+  lootMagicItem: ['name', 'page', 'source', 'table', 'type'],
+  lootDragonMundaneItemTable: [],
   item: [
     '_copy',
     'ability',
@@ -1030,6 +1046,19 @@ export function validateCollectionRecords(
   throw new ValidationError(failures);
 }
 
+export function validateDragonMundaneItems(file: string, value: unknown): readonly unknown[] {
+  const result = z.array(z.object({ item: z.string(), max: z.number(), min: z.number() }).strict()).safeParse(value);
+  if (result.success) return result.data;
+  throw new ValidationError(
+    result.error.issues.map((issue) => ({
+      collection: 'lootDragonMundaneItemTable',
+      file,
+      message: issue.message,
+      path: issue.path,
+    })),
+  );
+}
+
 export function validateCollectionFile(
   file: string,
   value: unknown,
@@ -1072,7 +1101,9 @@ export function validateCollectionFile(
   return Object.fromEntries(
     collections.map((collection, index) => [
       collection,
-      validateCollectionRecords(file, collection, fileValue[collectionNames[index]!]),
+      collection === 'lootDragonMundaneItemTable'
+        ? (validateDragonMundaneItems(file, fileValue[collectionNames[index]!]) as readonly RawRecord[])
+        : validateCollectionRecords(file, collection, fileValue[collectionNames[index]!]),
     ]),
   ) as Readonly<Record<CatalogCollection, readonly RawRecord[] | undefined>>;
 }

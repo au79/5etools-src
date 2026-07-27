@@ -175,6 +175,22 @@ void describe('MCP stdio transport', () => {
       if (!isTextContent(templateContent)) throw new Error('The monster template get tool did not return text content');
       assert.equal((JSON.parse(templateContent.text) as { readonly id?: unknown }).id, 'monstertemplate/aarakocra/dmg');
 
+      const dragonMundaneItems = await client.callTool({
+        arguments: {
+          domain: 'lootDragonMundaneItemTable',
+          name: 'Dragon Mundane Items',
+          source: 'FTD',
+        },
+        name: GET_TOOL,
+      });
+      const dragonMundaneItemsContent = getFirstContent(dragonMundaneItems.content);
+      if (!isTextContent(dragonMundaneItemsContent))
+        throw new Error('The dragon mundane items get tool did not return text content');
+      assert.equal(
+        (JSON.parse(dragonMundaneItemsContent.text) as { readonly id?: unknown }).id,
+        'lootdragonmundaneitemtable/ftd',
+      );
+
       const equipmentGets = [
         [{ domain: 'item', name: 'Bag of Holding', source: 'DMG' }, 'item/bag%20of%20holding/dmg'],
         [{ domain: 'itemGroup', name: 'Arcane Focus', source: 'PHB' }, 'itemgroup/arcane%20focus/phb'],

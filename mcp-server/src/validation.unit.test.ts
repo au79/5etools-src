@@ -6,10 +6,22 @@ import {
   validateCatalogProjectRoot,
   validateCollectionFile,
   validateCollectionRecords,
+  validateDragonMundaneItems,
   ValidationError,
 } from './validation.js';
 
 void describe('Phase 1 validation', () => {
+  void test('validates dragon mundane items as one raw table', () => {
+    const table = [{ item: '2d4 {@item candle|phb|candles}', max: 1, min: 1 }];
+    assert.deepEqual(validateDragonMundaneItems('data/loot.json', table), table);
+    assert.throws(
+      () => validateDragonMundaneItems('homebrew/loot.json', [{ item: 'Candle', max: '1', min: 1 }]),
+      (error: unknown) =>
+        error instanceof ValidationError &&
+        error.failures.some((failure) => failure.file === 'homebrew/loot.json' && failure.path.join('.') === '0.max'),
+    );
+  });
+
   void test('accepts minimal records and preserves the raw records', () => {
     const records = [{ name: 'Human', source: 'PHB', entries: ['A tagged {@spell shield} entry.'] }];
     const backgrounds = [{ entries: ['A learned priest.'], name: 'Acolyte', source: 'PHB' }];

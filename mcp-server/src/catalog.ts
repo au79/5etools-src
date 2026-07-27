@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { type CatalogManifest, createCatalogManifest, DEFAULT_SOURCE_ROOT } from './manifest.js';
-import { type CatalogCollection, validateCollectionFile } from './validation.js';
+import { type CatalogCollection, validateCollectionFile, validateDragonMundaneItems } from './validation.js';
 
 type RawRecord = Readonly<Record<string, unknown>>;
 
@@ -12,6 +12,7 @@ export interface CatalogRecord {
   readonly edition?: string | undefined;
   readonly file: string;
   readonly id: string;
+  readonly name: string;
   readonly page?: number | undefined;
   readonly source: string;
   readonly sourceRoot: string;
@@ -91,6 +92,13 @@ export function createRecordId(domain: CatalogCollection, record: RawRecord): st
     case 'monster':
     case 'monsterTemplate':
     case 'legendaryGroupTemplate':
+    case 'encounter':
+    case 'lootIndividual':
+    case 'lootHoard':
+    case 'lootDragon':
+    case 'lootGem':
+    case 'lootArtObject':
+    case 'lootMagicItem':
     case 'item':
     case 'itemGroup':
     case 'itemBase':
@@ -103,6 +111,8 @@ export function createRecordId(domain: CatalogCollection, record: RawRecord): st
     case 'class':
       parts = [domain, requireIdentityPart(record, 'name'), source];
       break;
+    case 'lootDragonMundaneItemTable':
+      throw new CatalogError('The dragon mundane items table has a fixed collection-level identity.');
     case 'deity':
       parts = [domain, requireIdentityPart(record, 'pantheon'), requireIdentityPart(record, 'name'), source];
       break;
@@ -161,8 +171,22 @@ function createCatalogRecord(domain: CatalogCollection, file: string, record: Ra
     edition: getString(record, 'edition'),
     file,
     id: createRecordId(domain, record),
+    name: getString(record, 'name') ?? getString(record, 'abbreviation') ?? '',
     page: getNumber(record, 'page'),
     source: requireIdentityPart(record, 'source'),
+    sourceRoot: file.split('/', 1)[0]!,
+  };
+}
+
+function createDragonMundaneItemsRecord(file: string, value: unknown): CatalogRecord {
+  return {
+    data: validateDragonMundaneItems(file, value) as unknown as RawRecord,
+    domain: 'lootDragonMundaneItemTable',
+    file,
+    id: 'lootdragonmundaneitemtable/ftd',
+    name: 'Dragon Mundane Items',
+    page: 72,
+    source: 'FTD',
     sourceRoot: file.split('/', 1)[0]!,
   };
 }
@@ -188,12 +212,15 @@ export function createCatalog(
       const relativePath = file.path.slice(`${sourceRoot.name}/`.length);
       const value: unknown = JSON.parse(readFileSync(join(sourceRoot.path, relativePath), 'utf8'));
       const entityCollections = file.collections.filter((collection) => collection.domain !== undefined);
-      const collections = entityCollections.map((collection) => collection.domain!);
+      const standardCollections = entityCollections.filter(
+        (collection) => collection.domain !== 'lootDragonMundaneItemTable',
+      );
+      const collections = standardCollections.map((collection) => collection.domain!);
       const validated = validateCollectionFile(
         file.path,
         value,
         collections,
-        entityCollections.map((collection) => collection.name),
+        standardCollections.map((collection) => collection.name),
         file.collections.map((collection) => collection.name),
       );
 
@@ -209,6 +236,22 @@ export function createCatalog(
           recordsById.set(catalogRecord.id, catalogRecord);
           records.push(catalogRecord);
         }
+      }
+
+      const dragonMundaneItems = entityCollections.find(
+        (collection) => collection.domain === 'lootDragonMundaneItemTable',
+      );
+      if (dragonMundaneItems !== undefined && sourceRoot.name === DEFAULT_SOURCE_ROOT) {
+        const fileValue = value as Record<string, unknown>;
+        const catalogRecord = createDragonMundaneItemsRecord(file.path, fileValue[dragonMundaneItems.name]);
+        const conflictingRecord = recordsById.get(catalogRecord.id);
+        if (conflictingRecord !== undefined) {
+          throw new CatalogError(
+            `Duplicate catalog ID ${catalogRecord.id} in ${conflictingRecord.file} (${conflictingRecord.sourceRoot}) and ${file.path} (${catalogRecord.sourceRoot}).`,
+          );
+        }
+        recordsById.set(catalogRecord.id, catalogRecord);
+        records.push(catalogRecord);
       }
     }
   }

@@ -74,7 +74,7 @@ function order(records: readonly CatalogRecord[]): CatalogRecord[] {
 }
 
 function getSearchRank(record: CatalogRecord, query: string): number {
-  const name = normalize(record.data.name?.toString() ?? '');
+  const name = normalize(record.name);
   if (name === query) return 0;
   if (name.startsWith(query)) return 1;
   if (name.includes(query)) return 2;
@@ -94,10 +94,7 @@ export function searchCatalog(catalog: Catalog, options: SearchCatalogOptions): 
   return orderSearchResults(
     catalog.records.filter((record) => {
       if (!matchesFilters(record, options)) return false;
-      return (
-        normalize(record.data.name?.toString() ?? '').includes(query) ||
-        JSON.stringify(record.data).toLocaleLowerCase().includes(query)
-      );
+      return normalize(record.name).includes(query) || JSON.stringify(record.data).toLocaleLowerCase().includes(query);
     }),
     query,
   ).slice(0, limit);
@@ -113,7 +110,7 @@ export function getCatalogRecord(catalog: Catalog, options: GetCatalogOptions): 
     catalog.records.filter(
       (record) =>
         record.domain === options.domain &&
-        (options.name === undefined || record.data.name === options.name) &&
+        (options.name === undefined || record.name === options.name) &&
         (options.abbreviation === undefined || record.data.abbreviation === options.abbreviation) &&
         (options.source === undefined || record.source === options.source) &&
         (options.sourceRoot === undefined || record.sourceRoot === options.sourceRoot),

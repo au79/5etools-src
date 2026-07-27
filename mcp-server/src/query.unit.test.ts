@@ -212,6 +212,30 @@ void describe('Catalog queries', () => {
     );
   });
 
+  void test('retrieves raw encounter and loot support records without selection', () => {
+    const catalog = getCatalog();
+    assert.equal(
+      getCatalogRecord(catalog, { domain: 'encounter', name: 'Airborne Encounters', source: 'EFA' })?.id,
+      'encounter/airborne%20encounters/efa',
+    );
+    assert.equal(
+      getCatalogRecord(catalog, { domain: 'lootIndividual', name: 'Challenge 0-4', source: 'DMG' })?.id,
+      'lootindividual/challenge%200-4/dmg',
+    );
+    assert.equal(
+      getCatalogRecord(catalog, { domain: 'lootMagicItem', name: 'Magic Item Table A', source: 'DMG' })?.id,
+      'lootmagicitem/magic%20item%20table%20a/dmg',
+    );
+    const mundaneItems = getCatalogRecord(catalog, {
+      domain: 'lootDragonMundaneItemTable',
+      name: 'Dragon Mundane Items',
+      source: 'FTD',
+    });
+    assert.equal(mundaneItems?.id, 'lootdragonmundaneitemtable/ftd');
+    assert.equal(mundaneItems?.page, 72);
+    assert.ok(Array.isArray(mundaneItems?.data));
+  });
+
   void test('searches and safely retrieves every equipment domain', () => {
     const catalog = getCatalog();
     const records = [
@@ -249,6 +273,7 @@ void describe('Catalog queries', () => {
           domain: 'race',
           file: 'data/races.json',
           id: 'race/dragonborn/tst',
+          name: 'Dragonborn',
           source: 'TST',
           sourceRoot: 'data',
         },
@@ -257,6 +282,7 @@ void describe('Catalog queries', () => {
           domain: 'race',
           file: 'data/races.json',
           id: 'race/variant-human/tst',
+          name: 'Variant Human',
           source: 'TST',
           sourceRoot: 'data',
         },
@@ -265,6 +291,7 @@ void describe('Catalog queries', () => {
           domain: 'race',
           file: 'data/races.json',
           id: 'race/human-variant/tst',
+          name: 'Human Variant',
           source: 'TST',
           sourceRoot: 'data',
         },
@@ -273,6 +300,7 @@ void describe('Catalog queries', () => {
           domain: 'race',
           file: 'data/races.json',
           id: 'race/human/tst',
+          name: 'Human',
           source: 'TST',
           sourceRoot: 'data',
         },

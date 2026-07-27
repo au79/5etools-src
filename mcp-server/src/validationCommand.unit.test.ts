@@ -29,6 +29,11 @@ function createFixtureRoot(): string {
     '{ "baseitem": [], "itemProperty": [], "itemType": [], "itemTypeAdditionalEntries": [], "itemEntry": [], "itemMastery": [] }',
   );
   writeFileSync(join(root, 'data', 'vehicles.json'), '{ "vehicle": [], "vehicleUpgrade": [] }');
+  writeFileSync(join(root, 'data', 'encounters.json'), '{ "encounter": [] }');
+  writeFileSync(
+    join(root, 'data', 'loot.json'),
+    '{ "individual": [], "hoard": [], "dragon": [], "gems": [], "artObjects": [], "magicItems": [], "dragonMundaneItems": [] }',
+  );
   writeFileSync(join(root, 'data', 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
   writeFileSync(join(root, 'data', 'spells', 'spells-fixture.json'), '{ "spell": [] }');
   writeFileSync(join(root, 'data', 'bestiary', 'index.json'), '{ "TST": "bestiary-fixture.json" }');
@@ -67,6 +72,11 @@ function addSourceRoot(root: string, name: string): void {
     '{ "baseitem": [], "itemProperty": [], "itemType": [], "itemTypeAdditionalEntries": [], "itemEntry": [], "itemMastery": [] }',
   );
   writeFileSync(join(root, name, 'vehicles.json'), '{ "vehicle": [], "vehicleUpgrade": [] }');
+  writeFileSync(join(root, name, 'encounters.json'), '{ "encounter": [] }');
+  writeFileSync(
+    join(root, name, 'loot.json'),
+    '{ "individual": [], "hoard": [], "dragon": [], "gems": [], "artObjects": [], "magicItems": [], "dragonMundaneItems": [] }',
+  );
   writeFileSync(join(root, name, 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
   writeFileSync(join(root, name, 'spells', 'spells-fixture.json'), '{ "spell": [] }');
   writeFileSync(join(root, name, 'bestiary', 'index.json'), '{ "TST": "bestiary-fixture.json" }');
@@ -88,8 +98,8 @@ void describe('Validation command', () => {
     const result = runValidationCommand({ defaultProjectRoot: root, environment: {}, workingDirectory: root });
 
     assert.equal(result.results.length, 1);
-    assert.equal(result.results[0]?.files.length, 19);
-    assert.equal(formatValidationSummary(result), 'Validation succeeded: 19 files across data.');
+    assert.equal(result.results[0]?.files.length, 21);
+    assert.equal(formatValidationSummary(result), 'Validation succeeded: 21 files across data.');
   });
 
   void test('uses the same source precedence as server startup', () => {

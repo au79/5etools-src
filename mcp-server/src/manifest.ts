@@ -38,6 +38,14 @@ export const CATALOG_DOMAINS = [
   'monster',
   'monsterTemplate',
   'legendaryGroupTemplate',
+  'encounter',
+  'lootIndividual',
+  'lootHoard',
+  'lootDragon',
+  'lootGem',
+  'lootArtObject',
+  'lootMagicItem',
+  'lootDragonMundaneItemTable',
   'item',
   'itemGroup',
   'itemBase',
@@ -125,6 +133,16 @@ const MONSTER_COLLECTIONS = new Map<string, CatalogDomain>([['monster', 'monster
 const MONSTER_TEMPLATE_COLLECTIONS = new Map<string, CatalogDomain>([
   ['monsterTemplate', 'monsterTemplate'],
   ['legendaryGroupTemplate', 'legendaryGroupTemplate'],
+]);
+const ENCOUNTER_COLLECTIONS = new Map<string, CatalogDomain>([['encounter', 'encounter']]);
+const LOOT_COLLECTIONS = new Map<string, CatalogDomain>([
+  ['individual', 'lootIndividual'],
+  ['hoard', 'lootHoard'],
+  ['dragon', 'lootDragon'],
+  ['gems', 'lootGem'],
+  ['artObjects', 'lootArtObject'],
+  ['magicItems', 'lootMagicItem'],
+  ['dragonMundaneItems', 'lootDragonMundaneItemTable'],
 ]);
 const ITEM_COLLECTIONS = new Map<string, CatalogDomain>([
   ['item', 'item'],
@@ -327,6 +345,12 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   const monsterTemplatePath = join(sourcePath, 'bestiary', 'template.json');
   requireFile(monsterTemplatePath, 'monster template source file');
   const monsterTemplateFile = classifyEntityFile(projectRoot, monsterTemplatePath, MONSTER_TEMPLATE_COLLECTIONS);
+  const encountersPath = join(sourcePath, 'encounters.json');
+  const lootPath = join(sourcePath, 'loot.json');
+  requireFile(encountersPath, 'encounter source file');
+  requireFile(lootPath, 'loot source file');
+  const encounterFile = classifyEntityFile(projectRoot, encountersPath, ENCOUNTER_COLLECTIONS);
+  const lootFile = classifyEntityFile(projectRoot, lootPath, LOOT_COLLECTIONS);
   requireDomains([raceFile], ['race', 'subrace'], 'race');
   requireDomains([backgroundFile], ['background'], 'background');
   requireDomains([featFile], ['feat'], 'feat');
@@ -347,6 +371,20 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
   );
   requireDomains([vehicleFile], ['vehicle', 'vehicleUpgrade'], 'vehicle');
   requireDomains([monsterTemplateFile], ['monsterTemplate', 'legendaryGroupTemplate'], 'monster template');
+  requireDomains([encounterFile], ['encounter'], 'encounter');
+  requireDomains(
+    [lootFile],
+    [
+      'lootIndividual',
+      'lootHoard',
+      'lootDragon',
+      'lootGem',
+      'lootArtObject',
+      'lootMagicItem',
+      'lootDragonMundaneItemTable',
+    ],
+    'loot',
+  );
 
   const files: ManifestFile[] = [
     raceFile,
@@ -367,6 +405,8 @@ export function createCatalogManifest(projectRoot: string, sourceRoot = DEFAULT_
     ...spellFiles,
     ...bestiaryFiles,
     monsterTemplateFile,
+    encounterFile,
+    lootFile,
   ];
   const classEntityFiles: ManifestFile[] = [];
   for (const fileName of readdirSync(classDirectory)

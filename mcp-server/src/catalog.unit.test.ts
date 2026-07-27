@@ -30,6 +30,11 @@ function createFixtureRoot(): string {
     '{ "baseitem": [], "itemProperty": [], "itemType": [], "itemTypeAdditionalEntries": [], "itemEntry": [], "itemMastery": [] }',
   );
   writeFileSync(join(root, 'data', 'vehicles.json'), '{ "vehicle": [], "vehicleUpgrade": [] }');
+  writeFileSync(join(root, 'data', 'encounters.json'), '{ "encounter": [] }');
+  writeFileSync(
+    join(root, 'data', 'loot.json'),
+    '{ "individual": [], "hoard": [], "dragon": [], "gems": [], "artObjects": [], "magicItems": [], "dragonMundaneItems": [] }',
+  );
   writeFileSync(join(root, 'data', 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
   writeFileSync(join(root, 'data', 'spells', 'spells-fixture.json'), '{ "spell": [] }');
   writeFileSync(join(root, 'data', 'bestiary', 'index.json'), '{ "TST": "bestiary-fixture.json" }');
@@ -68,6 +73,11 @@ function createAlternateSourceRoot(root: string, name: string): void {
     '{ "baseitem": [], "itemProperty": [], "itemType": [], "itemTypeAdditionalEntries": [], "itemEntry": [], "itemMastery": [] }',
   );
   writeFileSync(join(root, name, 'vehicles.json'), '{ "vehicle": [], "vehicleUpgrade": [] }');
+  writeFileSync(join(root, name, 'encounters.json'), '{ "encounter": [] }');
+  writeFileSync(
+    join(root, name, 'loot.json'),
+    '{ "individual": [], "hoard": [], "dragon": [], "gems": [], "artObjects": [], "magicItems": [], "dragonMundaneItems": [] }',
+  );
   writeFileSync(join(root, name, 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
   writeFileSync(join(root, name, 'spells', 'spells-fixture.json'), '{ "spell": [] }');
   writeFileSync(join(root, name, 'bestiary', 'index.json'), '{ "TST": "bestiary-fixture.json" }');
@@ -183,6 +193,13 @@ void describe('Phase 1 catalog', () => {
     );
     assert.equal(ammunition?.id, 'itemproperty/a/phb');
     assert.equal(ammunition?.file, 'data/items-base.json');
+
+    const dragonMundaneItems = catalog.records.find((record) => record.domain === 'lootDragonMundaneItemTable');
+    assert.equal(dragonMundaneItems?.id, 'lootdragonmundaneitemtable/ftd');
+    assert.equal(dragonMundaneItems?.name, 'Dragon Mundane Items');
+    assert.equal(dragonMundaneItems?.source, 'FTD');
+    assert.equal(dragonMundaneItems?.page, 72);
+    assert.ok(Array.isArray(dragonMundaneItems?.data));
   });
 
   void test('creates stable parent-aware record IDs', () => {
@@ -245,6 +262,10 @@ void describe('Phase 1 catalog', () => {
       () => createRecordId('race', { name: 'Human' }),
       (error: unknown) => error instanceof CatalogError && error.message.includes('source'),
     );
+    assert.throws(
+      () => createRecordId('lootDragonMundaneItemTable', { source: 'FTD' }),
+      (error: unknown) => error instanceof CatalogError && error.message.includes('fixed collection-level identity'),
+    );
   });
 
   void test('rejects colliding IDs rather than merging records', () => {
@@ -282,6 +303,19 @@ void describe('Phase 1 catalog', () => {
         error instanceof CatalogError &&
         error.message.includes('data/races.json (data)') &&
         error.message.includes('homebrew/races.json (homebrew)'),
+    );
+  });
+
+  void test('rejects duplicate collection-level dragon mundane item tables', () => {
+    const root = createFixtureRoot();
+
+    assert.throws(
+      () =>
+        createCatalog(root, [
+          { name: 'data', path: join(root, 'data') },
+          { name: 'data', path: join(root, 'data') },
+        ]),
+      (error: unknown) => error instanceof CatalogError && error.message.includes('lootdragonmundaneitemtable/ftd'),
     );
   });
 

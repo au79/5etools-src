@@ -36,6 +36,11 @@ function createFixtureRoot(): string {
     '{ "baseitem": [], "itemProperty": [], "itemType": [], "itemTypeAdditionalEntries": [], "itemEntry": [], "itemMastery": [] }',
   );
   writeFileSync(join(root, 'data', 'vehicles.json'), '{ "vehicle": [], "vehicleUpgrade": [] }');
+  writeFileSync(join(root, 'data', 'encounters.json'), '{ "encounter": [] }');
+  writeFileSync(
+    join(root, 'data', 'loot.json'),
+    '{ "individual": [], "hoard": [], "dragon": [], "gems": [], "artObjects": [], "magicItems": [], "dragonMundaneItems": [] }',
+  );
   writeFileSync(join(root, 'data', 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
   writeFileSync(join(root, 'data', 'spells', 'spells-fixture.json'), '{ "spell": [] }');
   writeFileSync(join(root, 'data', 'bestiary', 'index.json'), '{ "TST": "bestiary-fixture.json" }');
@@ -73,6 +78,8 @@ void describe('Phase 1 manifest', () => {
     assert.ok(manifest.files.some((file) => file.path === 'data/items.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/items-base.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/vehicles.json' && file.role === 'entity'));
+    const loot = manifest.files.find((file) => file.path === 'data/loot.json');
+    assert.ok(loot?.collections.some((collection) => collection.domain === 'lootDragonMundaneItemTable'));
     assert.ok(manifest.files.some((file) => file.path === 'data/spells/index.json' && file.role === 'catalog'));
     assert.ok(manifest.files.some((file) => file.path === 'data/spells/spells-phb.json' && file.role === 'entity'));
     assert.ok(manifest.files.some((file) => file.path === 'data/class/index.json' && file.role === 'catalog'));
@@ -228,6 +235,11 @@ void describe('Phase 1 manifest', () => {
       '{ "baseitem": [], "itemProperty": [], "itemType": [], "itemTypeAdditionalEntries": [], "itemEntry": [], "itemMastery": [] }',
     );
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'vehicles.json'), '{ "vehicle": [], "vehicleUpgrade": [] }');
+    writeFileSync(join(missingClassDirectoryRoot, 'data', 'encounters.json'), '{ "encounter": [] }');
+    writeFileSync(
+      join(missingClassDirectoryRoot, 'data', 'loot.json'),
+      '{ "individual": [], "hoard": [], "dragon": [], "gems": [], "artObjects": [], "magicItems": [], "dragonMundaneItems": [] }',
+    );
     mkdirSync(join(missingClassDirectoryRoot, 'data', 'spells'));
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'spells', 'index.json'), '{ "PHB": "spells-fixture.json" }');
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'spells', 'spells-fixture.json'), '{ "spell": [] }');
