@@ -179,6 +179,39 @@ function projectAdventureMetadata(domain: 'adventure' | 'book', record: RawRecor
   return Object.fromEntries(fields.flatMap((field) => (record[field] === undefined ? [] : [[field, record[field]]])));
 }
 
+export function getMetadataSourceIds(projectRoot: string): ReadonlySet<string> {
+  const sourceIds = new Set<string>();
+  for (const [fileName, collection] of [
+    ['adventures.json', 'adventure'],
+    ['books.json', 'book'],
+  ] as const) {
+    const value: unknown = JSON.parse(readFileSync(join(projectRoot, DEFAULT_SOURCE_ROOT, fileName), 'utf8'));
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+      throw new CatalogError(`Adventure metadata file data/${fileName} must contain a JSON object.`);
+    }
+    const records = (value as Record<string, unknown>)[collection];
+    if (!Array.isArray(records))
+      throw new CatalogError(`Adventure metadata file data/${fileName} has no ${collection} list.`);
+    for (const record of records) {
+      if (typeof record !== 'object' || record === null || Array.isArray(record)) continue;
+      const source = (record as RawRecord).source;
+      if (typeof source === 'string') sourceIds.add(source);
+    }
+  }
+  return sourceIds;
+}
+
+function validateAdventureAllowlist(projectRoot: string, sourceIds: readonly string[]): void {
+  if (new Set(sourceIds).size !== sourceIds.length) {
+    throw new CatalogError('Adventure allowlist contains duplicate source IDs.');
+  }
+  const knownSourceIds = getMetadataSourceIds(projectRoot);
+  const unknownSourceIds = sourceIds.filter((sourceId) => !knownSourceIds.has(sourceId));
+  if (unknownSourceIds.length > 0) {
+    throw new CatalogError(`Unknown adventure source IDs: ${unknownSourceIds.join(', ')}.`);
+  }
+}
+
 function createCatalogRecord(domain: CatalogCollection, file: string, record: RawRecord): CatalogRecord {
   return {
     data: record,
@@ -214,6 +247,7 @@ export function createCatalog(
   adventurePolicy: CatalogAdventurePolicy = { mode: 'disabled', sourceIds: [] },
 ): Catalog {
   if (sourceRoots.length === 0) throw new CatalogError('At least one source root must be enabled.');
+  if (adventurePolicy.mode === 'allowlist') validateAdventureAllowlist(projectRoot, adventurePolicy.sourceIds);
 
   const records: CatalogRecord[] = [];
   const recordsById = new Map<string, CatalogRecord>();

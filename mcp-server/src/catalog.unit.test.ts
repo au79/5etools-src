@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { CatalogError, createCatalog, createRecordId, getCatalogDiagnostics } from './catalog.js';
+import { CatalogError, createCatalog, createRecordId, getCatalogDiagnostics, getMetadataSourceIds } from './catalog.js';
 
 function createFixtureRoot(): string {
   const root = mkdtempSync(join(tmpdir(), '5etools-mcp-catalog-'));
@@ -382,5 +382,31 @@ void describe('Phase 1 catalog', () => {
 
     const allMetadata = createCatalog(projectRoot, undefined, { mode: 'all', sourceIds: [] });
     assert.ok(allMetadata.records.some((record) => record.domain === 'book' && record.source === 'PHB'));
+
+    assert.throws(
+      () => createCatalog(projectRoot, undefined, { mode: 'allowlist', sourceIds: ['NotARealSource'] }),
+      (error: unknown) => error instanceof CatalogError && error.message.includes('Unknown adventure source IDs'),
+    );
+    assert.throws(
+      () => createCatalog(projectRoot, undefined, { mode: 'allowlist', sourceIds: ['LMoP', 'LMoP'] }),
+      (error: unknown) => error instanceof CatalogError && error.message.includes('duplicate source IDs'),
+    );
+  });
+
+  void test('rejects malformed adventure metadata indexes before accepting an allowlist', () => {
+    const root = createFixtureRoot();
+    writeFileSync(join(root, 'data', 'adventures.json'), '[]');
+    writeFileSync(join(root, 'data', 'books.json'), '{ "book": [] }');
+    assert.throws(
+      () => getMetadataSourceIds(root),
+      (error: unknown) => error instanceof CatalogError && error.message.includes('must contain a JSON object'),
+    );
+
+    writeFileSync(join(root, 'data', 'adventures.json'), '{ "adventure": [null, { "source": "LMoP" }] }');
+    writeFileSync(join(root, 'data', 'books.json'), '{}');
+    assert.throws(
+      () => getMetadataSourceIds(root),
+      (error: unknown) => error instanceof CatalogError && error.message.includes('has no book list'),
+    );
   });
 });
