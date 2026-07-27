@@ -24,6 +24,7 @@ function createFixtureRoot(): string {
   writeFileSync(join(root, 'data', 'bastions.json'), '{ "facility": [] }');
   writeFileSync(join(root, 'data', 'actions.json'), '{ "action": [] }');
   writeFileSync(join(root, 'data', 'conditionsdiseases.json'), '{ "condition": [], "disease": [], "status": [] }');
+  writeFileSync(join(root, 'data', 'languages.json'), '{ "language": [], "languageScript": [] }');
   writeFileSync(join(root, 'data', 'items.json'), '{ "item": [], "itemGroup": [] }');
   writeFileSync(
     join(root, 'data', 'items-base.json'),
@@ -166,6 +167,10 @@ void describe('Phase 1 manifest', () => {
     writeFileSync(
       join(missingClassDirectoryRoot, 'data', 'conditionsdiseases.json'),
       '{ "condition": [], "disease": [], "status": [] }',
+    );
+    writeFileSync(
+      join(missingClassDirectoryRoot, 'data', 'languages.json'),
+      '{ "language": [], "languageScript": [] }',
     );
     writeFileSync(join(missingClassDirectoryRoot, 'data', 'items.json'), '{ "item": [], "itemGroup": [] }');
     writeFileSync(

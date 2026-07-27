@@ -118,6 +118,19 @@ void describe('Catalog queries', () => {
     assert.throws(() => getCatalogRecord(catalog, { domain: 'condition', name: 'Blinded' }), QueryError);
   });
 
+  void test('searches language domains and keeps duplicate names ambiguous', () => {
+    const catalog = getCatalog();
+    assert.equal(
+      searchCatalog(catalog, { domain: 'language', query: 'common', source: 'PHB' })[0]?.id,
+      'language/common/phb',
+    );
+    assert.equal(
+      getCatalogRecord(catalog, { domain: 'languageScript', name: 'Draconic', source: 'PHB' })?.id,
+      'languagescript/draconic/phb',
+    );
+    assert.throws(() => getCatalogRecord(catalog, { domain: 'language', name: 'Common' }), QueryError);
+  });
+
   void test('searches and safely retrieves every equipment domain', () => {
     const catalog = getCatalog();
     const records = [
