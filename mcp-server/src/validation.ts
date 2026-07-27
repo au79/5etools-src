@@ -23,6 +23,7 @@ export const CATALOG_COLLECTIONS = [
   'trap',
   'hazard',
   'deity',
+  'table',
   'item',
   'itemGroup',
   'itemBase',
@@ -472,6 +473,7 @@ const COLLECTION_FIELDS: Readonly<Record<CatalogCollection, readonly string[]>> 
     'title',
     'worshipers',
   ],
+  table: ['basicRules', 'caption', 'colLabels', 'colStyles', 'name', 'otherSources', 'page', 'rows', 'source', 'srd'],
   item: [
     '_copy',
     'ability',
@@ -866,6 +868,10 @@ function getFieldSchema(collection: CatalogCollection, field: string): ZodType<u
     return collection === 'subrace' || collection === 'itemProperty' ? z.string().optional() : z.string();
   if (field === 'abbreviation' && collection === 'itemProperty') return z.string();
   if (field === 'pantheon' && collection === 'deity') return z.string();
+  if (collection === 'table' && field === 'caption') return z.string().optional();
+  if (collection === 'table' && (field === 'colLabels' || field === 'colStyles'))
+    return z.array(JSON_VALUE_SCHEMA).optional();
+  if (collection === 'table' && field === 'rows') return z.array(z.array(JSON_VALUE_SCHEMA));
   if (REQUIRED_STRING_FIELDS.has(field)) return z.string();
   if (field === 'raceName' || field === 'raceSource') return z.string().optional();
   if (field === 'level') {

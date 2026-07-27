@@ -148,6 +148,17 @@ void describe('MCP stdio transport', () => {
       if (!isTextContent(deityContent)) throw new Error('The deity get tool did not return text content');
       assert.equal((JSON.parse(deityContent.text) as { readonly id?: unknown }).id, 'deity/norse/aegir/phb');
 
+      const table = await client.callTool({
+        arguments: { domain: 'table', name: '2,500 gp Art Objects', source: 'PSX' },
+        name: GET_TOOL,
+      });
+      const tableContent = getFirstContent(table.content);
+      if (!isTextContent(tableContent)) throw new Error('The table get tool did not return text content');
+      assert.equal(
+        (JSON.parse(tableContent.text) as { readonly id?: unknown }).id,
+        'table/2%2C500%20gp%20art%20objects/psx',
+      );
+
       const equipmentGets = [
         [{ domain: 'item', name: 'Bag of Holding', source: 'DMG' }, 'item/bag%20of%20holding/dmg'],
         [{ domain: 'itemGroup', name: 'Arcane Focus', source: 'PHB' }, 'itemgroup/arcane%20focus/phb'],

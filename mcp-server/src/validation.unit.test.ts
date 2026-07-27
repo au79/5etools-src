@@ -19,6 +19,7 @@ void describe('Phase 1 validation', () => {
     const actions = [{ entries: ['Make one attack.'], name: 'Attack', source: 'PHB' }];
     const conditions = [{ entries: ['You cannot see.'], name: 'Blinded', source: 'PHB' }];
     const itemProperty = [{ abbreviation: 'A', source: 'PHB' }];
+    const tables = [{ colLabels: ['d6'], colStyles: ['col-2'], name: 'Fixture Table', rows: [['1']], source: 'TST' }];
 
     assert.strictEqual(validateCollectionRecords('data/races.json', 'race', records), records);
     assert.strictEqual(validateCollectionRecords('data/backgrounds.json', 'background', backgrounds), backgrounds);
@@ -31,6 +32,7 @@ void describe('Phase 1 validation', () => {
     assert.strictEqual(validateCollectionRecords('data/actions.json', 'action', actions), actions);
     assert.strictEqual(validateCollectionRecords('data/conditionsdiseases.json', 'condition', conditions), conditions);
     assert.strictEqual(validateCollectionRecords('data/items-base.json', 'itemProperty', itemProperty), itemProperty);
+    assert.strictEqual(validateCollectionRecords('data/tables.json', 'table', tables), tables);
     for (const collection of [
       'item',
       'itemGroup',
@@ -113,6 +115,14 @@ void describe('Phase 1 validation', () => {
         error instanceof ValidationError && error.failures.some((failure) => failure.path.join('.') === '0.source'),
     );
     assert.throws(
+      () =>
+        validateCollectionRecords('data/tables.json', 'table', [
+          { name: 'Broken', rows: ['not a row'], source: 'TST' },
+        ]),
+      (error: unknown) =>
+        error instanceof ValidationError && error.failures.some((failure) => failure.path.join('.') === '0.rows.0'),
+    );
+    assert.throws(
       () => validateCollectionRecords('data/races.json', 'race', [{ name: 1, source: 2 }]),
       (error: unknown) =>
         error instanceof ValidationError &&
@@ -166,6 +176,7 @@ void describe('Phase 1 validation', () => {
     assert.ok(result.files.includes('data/items.json'));
     assert.ok(result.files.includes('data/items-base.json'));
     assert.ok(result.files.includes('data/vehicles.json'));
+    assert.ok(result.files.includes('data/tables.json'));
     assert.ok(result.files.some((file) => file.startsWith('data/class/class-')));
   });
 });

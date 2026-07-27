@@ -22,6 +22,7 @@ function createFixtureRoot(): string {
   writeFileSync(join(root, 'data', 'objects.json'), '{ "object": [] }');
   writeFileSync(join(root, 'data', 'trapshazards.json'), '{ "trap": [], "hazard": [] }');
   writeFileSync(join(root, 'data', 'deities.json'), '{ "deity": [] }');
+  writeFileSync(join(root, 'data', 'tables.json'), '{ "table": [] }');
   writeFileSync(join(root, 'data', 'items.json'), '{ "item": [], "itemGroup": [] }');
   writeFileSync(
     join(root, 'data', 'items-base.json'),
@@ -52,6 +53,7 @@ function createAlternateSourceRoot(root: string, name: string): void {
   writeFileSync(join(root, name, 'objects.json'), '{ "object": [] }');
   writeFileSync(join(root, name, 'trapshazards.json'), '{ "trap": [], "hazard": [] }');
   writeFileSync(join(root, name, 'deities.json'), '{ "deity": [] }');
+  writeFileSync(join(root, name, 'tables.json'), '{ "table": [] }');
   writeFileSync(join(root, name, 'items.json'), '{ "item": [], "itemGroup": [] }');
   writeFileSync(
     join(root, name, 'items-base.json'),
@@ -121,6 +123,10 @@ void describe('Phase 1 catalog', () => {
     assert.equal(createRecordId('object', { name: 'Ballista', source: 'DMG' }), 'object/ballista/dmg');
     assert.equal(createRecordId('trap', { name: 'Falling Net', source: 'DMG' }), 'trap/falling%20net/dmg');
     assert.equal(createRecordId('deity', { name: 'Aegir', pantheon: 'Norse', source: 'PHB' }), 'deity/norse/aegir/phb');
+    assert.equal(
+      createRecordId('table', { name: '2,500 gp Art Objects', source: 'PSX' }),
+      'table/2%2C500%20gp%20art%20objects/psx',
+    );
 
     const equipment = [
       ['item', 'Bag of Holding', 'DMG', 'item/bag%20of%20holding/dmg', 'data/items.json'],

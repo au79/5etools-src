@@ -168,6 +168,14 @@ void describe('Catalog queries', () => {
     assert.throws(() => getCatalogRecord(catalog, { domain: 'deity', name: 'Oghma', source: 'PHB' }), QueryError);
   });
 
+  void test('searches tables by their source-aware identity', () => {
+    const catalog = getCatalog();
+    assert.equal(
+      getCatalogRecord(catalog, { domain: 'table', name: '2,500 gp Art Objects', source: 'PSX' })?.id,
+      'table/2%2C500%20gp%20art%20objects/psx',
+    );
+  });
+
   void test('searches and safely retrieves every equipment domain', () => {
     const catalog = getCatalog();
     const records = [
