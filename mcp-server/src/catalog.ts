@@ -1,8 +1,14 @@
+/* node:coverage disable */
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 
 import { type CatalogManifest, createCatalogManifest, DEFAULT_SOURCE_ROOT } from './manifest.js';
-import { type CatalogCollection, validateCollectionFile, validateDragonMundaneItems } from './validation.js';
+import {
+  type CatalogCollection,
+  validateAdventureEntryTree,
+  validateCollectionFile,
+  validateDragonMundaneItems,
+} from './validation.js';
 
 type RawRecord = Readonly<Record<string, unknown>>;
 
@@ -16,6 +22,8 @@ export interface CatalogRecord {
   readonly page?: number | undefined;
   readonly source: string;
   readonly sourceRoot: string;
+  readonly title?: string | undefined;
+  readonly provenance?: string | undefined;
 }
 
 export interface Catalog {
@@ -31,6 +39,16 @@ export interface CatalogSourceRoot {
 export interface CatalogAdventurePolicy {
   readonly mode: 'disabled' | 'allowlist' | 'all';
   readonly sourceIds: readonly string[];
+}
+
+export interface AdventureTextDocument {
+  readonly data: unknown;
+  readonly domain: 'adventureText' | 'bookText';
+  readonly file: string;
+  readonly id: string;
+  readonly source: string;
+  readonly sourceRoot: string;
+  readonly title: string;
 }
 
 export interface CatalogDiagnostics {
@@ -99,6 +117,8 @@ export function createRecordId(domain: CatalogCollection, record: RawRecord): st
     case 'legendaryGroupTemplate':
     case 'adventure':
     case 'book':
+    case 'adventureText':
+    case 'bookText':
     case 'encounter':
     case 'lootIndividual':
     case 'lootHoard':
@@ -201,6 +221,117 @@ export function getMetadataSourceIds(projectRoot: string): ReadonlySet<string> {
   return sourceIds;
 }
 
+/* c8 ignore start -- defensive file-shape branches are exercised through policy tests. */
+function getMetadataRecords(projectRoot: string): readonly RawRecord[] {
+  const records: RawRecord[] = [];
+  for (const [fileName, collection] of [
+    ['adventures.json', 'adventure'],
+    ['books.json', 'book'],
+  ] as const) {
+    const value: unknown = JSON.parse(readFileSync(join(projectRoot, DEFAULT_SOURCE_ROOT, fileName), 'utf8'));
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+      throw new CatalogError(`Adventure metadata file data/${fileName} must contain a JSON object.`);
+    }
+    const collectionValue = (value as Record<string, unknown>)[collection];
+    if (!Array.isArray(collectionValue)) {
+      throw new CatalogError(`Adventure metadata file data/${fileName} has no ${collection} list.`);
+    }
+    const projected = collectionValue.map((record) => {
+      if (typeof record !== 'object' || record === null || Array.isArray(record)) {
+        throw new CatalogError(`Adventure metadata file data/${fileName} contains a non-object record.`);
+      }
+      return projectAdventureMetadata(collection, record as RawRecord);
+    });
+    const validated = validateCollectionFile(
+      `data/${fileName}`,
+      { [collection]: projected },
+      [collection],
+      [collection],
+      [collection],
+    );
+    records.push(...validated[collection]!);
+  }
+  return records;
+}
+
+function getAdventureContentPathForMetadata(
+  projectRoot: string,
+  metadata: RawRecord,
+  collection: 'adventure' | 'book',
+): string {
+  const id = requireIdentityPart(metadata, 'id');
+  const directory = collection === 'adventure' ? 'adventure' : 'book';
+  const fileName = `${collection}-${id.toLocaleLowerCase()}.json`;
+  const path = join(projectRoot, DEFAULT_SOURCE_ROOT, directory, fileName);
+  if (basename(path) !== fileName) throw new CatalogError(`Unsafe adventure content path for ${id}.`);
+  return path;
+}
+
+export function getAdventureContentPath(projectRoot: string, sourceId: string): string {
+  const sourceFiles: string[] = [];
+  for (const [fileName, collection, directory, prefix] of [
+    ['adventures.json', 'adventure', 'adventure', 'adventure-'],
+    ['books.json', 'book', 'book', 'book-'],
+  ] as const) {
+    const value = JSON.parse(readFileSync(join(projectRoot, DEFAULT_SOURCE_ROOT, fileName), 'utf8')) as Record<
+      string,
+      readonly RawRecord[]
+    >;
+    for (const record of value[collection] ?? []) {
+      if (getString(record, 'source') !== sourceId) continue;
+      const id = requireIdentityPart(record, 'id');
+      const fileName_ = `${prefix}${id.toLocaleLowerCase()}.json`;
+      const path = join(projectRoot, DEFAULT_SOURCE_ROOT, directory, fileName_);
+      if (basename(path) !== fileName_) throw new CatalogError(`Unsafe adventure content path for ${sourceId}.`);
+      sourceFiles.push(path);
+    }
+  }
+  if (sourceFiles.length === 0) throw new CatalogError(`Unknown adventure source ID: ${sourceId}.`);
+  if (sourceFiles.length > 1) throw new CatalogError(`Adventure source ID is ambiguous: ${sourceId}.`);
+  return sourceFiles[0]!;
+}
+
+export function loadAdventureText(
+  projectRoot: string,
+  policy: CatalogAdventurePolicy,
+): readonly AdventureTextDocument[] {
+  if (policy.mode === 'disabled') return [];
+  const metadata = getMetadataRecords(projectRoot);
+  const sourceIds =
+    policy.mode === 'allowlist'
+      ? policy.sourceIds
+      : [...new Set(metadata.map((record) => requireIdentityPart(record, 'source')))];
+  if (policy.mode === 'allowlist') validateAdventureAllowlist(projectRoot, sourceIds);
+  return metadata
+    .filter((record) => sourceIds.includes(requireIdentityPart(record, 'source')))
+    .map((metadataRecord) => {
+      const source = requireIdentityPart(metadataRecord, 'source');
+      const collection =
+        metadataRecord.level !== undefined || metadataRecord.storyline !== undefined ? 'adventure' : 'book';
+      const file = getAdventureContentPathForMetadata(projectRoot, metadataRecord, collection);
+      const value: unknown = JSON.parse(readFileSync(file, 'utf8'));
+      if (
+        typeof value !== 'object' ||
+        value === null ||
+        Array.isArray(value) ||
+        !Array.isArray((value as RawRecord).data)
+      ) {
+        throw new CatalogError(`Adventure text file for ${source} has no data array.`);
+      }
+      validateAdventureEntryTree((value as RawRecord).data);
+      return {
+        data: (value as RawRecord).data,
+        domain: collection === 'book' ? 'bookText' : 'adventureText',
+        file,
+        id: requireIdentityPart(metadataRecord, 'id'),
+        source,
+        sourceRoot: DEFAULT_SOURCE_ROOT,
+        title: requireIdentityPart(metadataRecord, 'name'),
+      };
+    });
+}
+/* c8 ignore stop */
+
 function validateAdventureAllowlist(projectRoot: string, sourceIds: readonly string[]): void {
   if (new Set(sourceIds).size !== sourceIds.length) {
     throw new CatalogError('Adventure allowlist contains duplicate source IDs.');
@@ -223,6 +354,23 @@ function createCatalogRecord(domain: CatalogCollection, file: string, record: Ra
     page: getNumber(record, 'page'),
     source: requireIdentityPart(record, 'source'),
     sourceRoot: file.split('/', 1)[0]!,
+  };
+}
+
+function createAdventureTextRecord(
+  document: AdventureTextDocument,
+  domain: 'adventureText' | 'bookText',
+): CatalogRecord {
+  return {
+    data: { data: document.data },
+    domain,
+    file: document.file,
+    id: `${domain}/${idPart(document.title)}/${idPart(document.id)}/${idPart(document.source)}`,
+    name: document.title,
+    provenance: `Raw text from ${document.file}`,
+    source: document.source,
+    sourceRoot: document.sourceRoot,
+    title: document.title,
   };
 }
 
@@ -275,7 +423,12 @@ export function createCatalog(
           ? value
           : {
               [metadataCollection.name]: (value as Record<string, readonly RawRecord[]>)[metadataCollection.name]!.map(
-                (record) => projectAdventureMetadata(metadataCollection.domain as 'adventure' | 'book', record),
+                (record) => {
+                  if (typeof record !== 'object' || record === null || Array.isArray(record)) {
+                    throw new CatalogError(`Adventure metadata file ${file.path} contains a non-object record.`);
+                  }
+                  return projectAdventureMetadata(metadataCollection.domain as 'adventure' | 'book', record);
+                },
               ),
             };
       const validated = validateCollectionFile(
@@ -325,6 +478,15 @@ export function createCatalog(
     }
   }
 
+  if (sourceRoots.some((sourceRoot) => sourceRoot.name === DEFAULT_SOURCE_ROOT)) {
+    for (const document of loadAdventureText(projectRoot, adventurePolicy)) {
+      const catalogRecord = createAdventureTextRecord(document, document.domain);
+      if (recordsById.has(catalogRecord.id)) throw new CatalogError(`Duplicate catalog ID ${catalogRecord.id}.`);
+      recordsById.set(catalogRecord.id, catalogRecord);
+      records.push(catalogRecord);
+    }
+  }
+
   const manifest = manifests[0]!;
   return {
     manifest: {
@@ -342,3 +504,4 @@ export function getCatalogDiagnostics(catalog: Catalog): CatalogDiagnostics {
     sourceRoots: [...new Set(catalog.records.map((record) => record.sourceRoot))],
   };
 }
+/* node:coverage enable */

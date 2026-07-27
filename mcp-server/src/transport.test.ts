@@ -61,6 +61,24 @@ void describe('MCP stdio transport', () => {
       if (!isTextContent(searchContent)) throw new Error('The search tool did not return text content');
       assert.ok((JSON.parse(searchContent.text) as readonly unknown[]).length > 0);
 
+      const disabledAdventureSearch = await client.callTool({
+        arguments: { domain: 'adventureText', query: 'goblin arrows' },
+        name: SEARCH_TOOL,
+      });
+      const disabledAdventureContent = getFirstContent(disabledAdventureSearch.content);
+      if (!isTextContent(disabledAdventureContent))
+        throw new Error('The disabled adventure search did not return text');
+      assert.deepEqual(JSON.parse(disabledAdventureContent.text) as unknown[], []);
+
+      const disabledAdventureGet = await client.callTool({
+        arguments: { id: 'adventureText/lost%20mine%20of%20phandelver/lmop/lmop' },
+        name: GET_TOOL,
+      });
+      const disabledAdventureGetContent = getFirstContent(disabledAdventureGet.content);
+      if (!isTextContent(disabledAdventureGetContent))
+        throw new Error('The disabled adventure get did not return text');
+      assert.equal(JSON.parse(disabledAdventureGetContent.text), null);
+
       const backgroundSearch = await client.callTool({
         arguments: { domain: 'background', query: 'acolyte' },
         name: SEARCH_TOOL,

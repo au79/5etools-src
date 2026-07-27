@@ -3,6 +3,7 @@ import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import {
+  validateAdventureEntryTree,
   validateCatalogProjectRoot,
   validateCollectionFile,
   validateCollectionRecords,
@@ -11,6 +12,13 @@ import {
 } from './validation.js';
 
 void describe('Phase 1 validation', () => {
+  void test('strictly validates adventure text trees', () => {
+    validateAdventureEntryTree({ type: 'entries', entries: [{ type: 'section', name: 'Safe', entries: ['text'] }] });
+    for (const value of [null, { type: 'unknown' }, { type: 'section', unexpected: true }]) {
+      assert.throws(() => validateAdventureEntryTree(value), ValidationError);
+    }
+  });
+
   void test('validates dragon mundane items as one raw table', () => {
     const table = [{ item: '2d4 {@item candle|phb|candles}', max: 1, min: 1 }];
     assert.deepEqual(validateDragonMundaneItems('data/loot.json', table), table);

@@ -11,6 +11,12 @@ function getCatalog() {
 }
 
 void describe('Catalog queries', () => {
+  void test('does not expose adventure text through disabled catalog queries', () => {
+    const catalog = getCatalog();
+    assert.deepEqual(searchCatalog(catalog, { domain: 'adventureText', query: 'goblin arrows' }), []);
+    assert.equal(getCatalogRecord(catalog, { id: 'adventureText/lost%20mine%20of%20phandelver/lmop/lmop' }), undefined);
+  });
+
   void test('searches deterministically with provenance filters and bounds', () => {
     const catalog = getCatalog();
     const records = searchCatalog(catalog, {

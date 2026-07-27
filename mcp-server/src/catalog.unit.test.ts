@@ -5,7 +5,15 @@ import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { CatalogError, createCatalog, createRecordId, getCatalogDiagnostics, getMetadataSourceIds } from './catalog.js';
+import {
+  CatalogError,
+  createCatalog,
+  createRecordId,
+  getAdventureContentPath,
+  getCatalogDiagnostics,
+  getMetadataSourceIds,
+  loadAdventureText,
+} from './catalog.js';
 
 function createFixtureRoot(): string {
   const root = mkdtempSync(join(tmpdir(), '5etools-mcp-catalog-'));
@@ -209,6 +217,31 @@ void describe('Phase 1 catalog', () => {
     assert.equal(createRecordId('classFeature', record), createRecordId('classFeature', { ...record }));
   });
 
+  void test('creates stable feature record IDs', () => {
+    assert.equal(
+      createRecordId('classFeature', {
+        className: 'Fighter',
+        classSource: 'PHB',
+        level: 1,
+        name: 'Second Wind',
+        source: 'PHB',
+      }),
+      'classfeature/fighter/phb/1/second%20wind/phb',
+    );
+    assert.equal(
+      createRecordId('subclassFeature', {
+        className: 'Wizard',
+        classSource: 'PHB',
+        level: 2,
+        name: 'School Feature',
+        source: 'PHB',
+        subclassShortName: 'Evocation',
+        subclassSource: 'PHB',
+      }),
+      'subclassfeature/wizard/phb/evocation/phb/2/school%20feature/phb',
+    );
+  });
+
   void test('distinguishes every Phase 1 identity shape', () => {
     assert.equal(createRecordId('race', { name: 'Human', source: 'PHB' }), 'race/human/phb');
     assert.equal(createRecordId('background', { name: 'Acolyte', source: 'PHB' }), 'background/acolyte/phb');
@@ -391,6 +424,24 @@ void describe('Phase 1 catalog', () => {
       () => createCatalog(projectRoot, undefined, { mode: 'allowlist', sourceIds: ['LMoP', 'LMoP'] }),
       (error: unknown) => error instanceof CatalogError && error.message.includes('duplicate source IDs'),
     );
+
+    const text = createCatalog(projectRoot, undefined, { mode: 'allowlist', sourceIds: ['LMoP'] }).records.filter(
+      (record) => record.domain === 'adventureText' || record.domain === 'bookText',
+    );
+    assert.deepEqual(
+      text.map((record) => record.domain),
+      ['adventureText'],
+    );
+    assert.equal(text[0]?.title, 'Lost Mine of Phandelver');
+    assert.equal(text[0]?.source, 'LMoP');
+    assert.match(text[0]?.provenance ?? '', /data\/adventure\/adventure-lmop\.json/);
+    assert.ok(Array.isArray(text[0]?.data.data));
+
+    const disabled = createCatalog(projectRoot);
+    assert.equal(
+      disabled.records.some((record) => record.domain === 'adventureText' || record.domain === 'bookText'),
+      false,
+    );
   });
 
   void test('rejects malformed adventure metadata indexes before accepting an allowlist', () => {
@@ -402,11 +453,40 @@ void describe('Phase 1 catalog', () => {
       (error: unknown) => error instanceof CatalogError && error.message.includes('must contain a JSON object'),
     );
 
+    writeFileSync(join(root, 'data', 'adventures.json'), '[]');
+    assert.throws(() => loadAdventureText(root, { mode: 'all', sourceIds: [] }), CatalogError);
+    writeFileSync(join(root, 'data', 'adventures.json'), '{}');
+    assert.throws(() => loadAdventureText(root, { mode: 'all', sourceIds: [] }), CatalogError);
+    writeFileSync(join(root, 'data', 'adventures.json'), '{ "adventure": [null] }');
+    assert.throws(() => loadAdventureText(root, { mode: 'all', sourceIds: [] }), CatalogError);
+
     writeFileSync(join(root, 'data', 'adventures.json'), '{ "adventure": [null, { "source": "LMoP" }] }');
     writeFileSync(join(root, 'data', 'books.json'), '{}');
     assert.throws(
       () => getMetadataSourceIds(root),
       (error: unknown) => error instanceof CatalogError && error.message.includes('has no book list'),
     );
+    writeFileSync(join(root, 'data', 'books.json'), '{ "book": [] }');
+    assert.throws(
+      () => createCatalog(root, undefined, { mode: 'all', sourceIds: [] }),
+      (error: unknown) => error instanceof CatalogError && error.message.includes('non-object record'),
+    );
+    writeFileSync(
+      join(root, 'data', 'adventures.json'),
+      '{ "adventure": [{ "id": "TST", "name": "Test", "source": "TST", "storyline": "Test" }] }',
+    );
+    mkdirSync(join(root, 'data', 'adventure'), { recursive: true });
+    const contentPath = join(root, 'data', 'adventure', 'adventure-tst.json');
+    for (const content of ['null', '[]', '{ "data": {} }']) {
+      writeFileSync(contentPath, content);
+      assert.throws(() => loadAdventureText(root, { mode: 'all', sourceIds: [] }), CatalogError);
+    }
+  });
+
+  void test('derives content paths from metadata IDs, never caller paths', () => {
+    const projectRoot = fileURLToPath(new URL('../../..', import.meta.url));
+    assert.equal(getAdventureContentPath(projectRoot, 'LMoP').endsWith('/data/adventure/adventure-lmop.json'), true);
+    assert.equal(getAdventureContentPath(projectRoot, 'PHB').endsWith('/data/book/book-phb.json'), true);
+    assert.throws(() => getAdventureContentPath(projectRoot, '../../etc/passwd'), CatalogError);
   });
 });

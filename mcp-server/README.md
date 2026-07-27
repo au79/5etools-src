@@ -98,8 +98,11 @@ pnpm start --root /path/to/5etools-src --sources data,homebrew --log-pretty
 ```
 
 The corresponding environment variables are `MCP_5ETOOLS_ROOT`, `MCP_5ETOOLS_CONFIG`, `MCP_5ETOOLS_SOURCES`,
-`MCP_5ETOOLS_LOG_LEVEL`, and `MCP_5ETOOLS_LOG_PRETTY`. The config file also supports `adventures`. The current public
-surface remains the read-only catalog.
+`MCP_5ETOOLS_LOG_LEVEL`, and `MCP_5ETOOLS_LOG_PRETTY`. The config file also supports `adventures`, which defaults to
+`disabled`. Adventure and book text domains are absent from discovery, search, and retrieval while disabled; use an
+explicit `allowlist` of metadata source IDs for selected text, or `all` when the explicit startup warning is acceptable.
+Text results retain the raw validated entry tree and visibly include the title, source, and file provenance. This is a
+spoiler-bearing opt-in; the server does not infer whether a caller should see spoilers.
 
 ## Validate data
 
