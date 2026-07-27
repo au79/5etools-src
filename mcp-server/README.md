@@ -104,6 +104,11 @@ explicit `allowlist` of metadata source IDs for selected text, or `all` when the
 Text results retain the raw validated entry tree and visibly include the title, source, and file provenance. This is a
 spoiler-bearing opt-in; the server does not infer whether a caller should see spoilers.
 
+Search uses a memory-only index built from the validated catalog during startup. It is discarded on shutdown and
+rebuilt after data changes; no index files, daemon, network service, or absolute paths are created. Search keeps raw
+tagged text, deterministic exact/prefix/substring ranking, source/domain filters, and bounded results. Exact `get`
+lookups remain independent of the search index. If startup validation fails, no new catalog or index is usable.
+
 ## Validate data
 
 Run the same configuration and source-root validation used at server startup without starting an MCP process:

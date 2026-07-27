@@ -29,6 +29,8 @@ export interface CatalogRecord {
 export interface Catalog {
   readonly manifest: CatalogManifest;
   readonly records: readonly CatalogRecord[];
+  readonly searchIndex?: ReadonlyMap<string, string>;
+  readonly searchIndexVersion?: string;
 }
 
 export interface CatalogSourceRoot {
@@ -494,6 +496,8 @@ export function createCatalog(
       files: manifests.flatMap((sourceManifest) => sourceManifest.files),
     },
     records,
+    searchIndex: new Map(records.map((record) => [record.id, JSON.stringify(record.data).toLocaleLowerCase()])),
+    searchIndexVersion: '1',
   };
 }
 

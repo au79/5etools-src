@@ -94,7 +94,8 @@ export function searchCatalog(catalog: Catalog, options: SearchCatalogOptions): 
   return orderSearchResults(
     catalog.records.filter((record) => {
       if (!matchesFilters(record, options)) return false;
-      return normalize(record.name).includes(query) || JSON.stringify(record.data).toLocaleLowerCase().includes(query);
+      const indexedText = catalog.searchIndex?.get(record.id) ?? JSON.stringify(record.data).toLocaleLowerCase();
+      return normalize(record.name).includes(query) || indexedText.includes(query);
     }),
     query,
   ).slice(0, limit);
